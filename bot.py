@@ -58,7 +58,7 @@ def createParser ():
 parser = createParser()
 namespace = parser.parse_args(sys.argv[1:])
 
-logfile = 'log/umdom_bot' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.txt'
+logfile = 'log/bot' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.txt'
 # Настройки логирования
 log_level = "WARNING"
 log_level_val = logging.WARNING
