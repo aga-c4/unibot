@@ -1,0 +1,15 @@
+# Байт-код, оптимизированные / DLL-файлы
+__pycache__/
+*.py[cod]
+
+# Файлы конфигурации для venv
+venv/
+.env
+
+# Контрольные точки в Jupyter notebook лучше оставить в стороне
+.ipynb_checkpoints
+
+/app
+/bots
+/*.sh
+/*.bat

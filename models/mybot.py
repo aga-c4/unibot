@@ -30,6 +30,9 @@ class MyBot:
         self.devices = conf_obj.get_config("devices").get("devices", {})
         if "def_route" in self.config["bot"]:
             self.def_route = self.config["bot"]["def_route"]   
+        self.main_variant = self.config["bot"]["main_variant"]    
+        self.forvard_variant = self.config["bot"]["forvard_variant"]   
+        self.back_variant = self.config["bot"]["back_variant"]   
         self.dop_variant = self.config["bot"]["nav_dop_variant"]
         self.dop_variant_route = self.config["bot"]["nav_dop_variant_route"]      
 
