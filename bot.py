@@ -194,9 +194,10 @@ if namespace.action == 'start':
                     request.set(node_variants=variants)
                     message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")    
                     if route!=my_bot.def_route:
-                        message.add_markup([my_bot.main_variant, 
-                                            variants["back_variant"],
-                                            variants["forvard_variant"]], "ReplyKeyboardMarkup")
+                        markup_variants = [my_bot.main_variant, variants["back_variant"]]
+                        if variants["forvard_variant"]:
+                            markup_variants.append(variants["forvard_variant"])
+                        message.add_markup(markup_variants, "ReplyKeyboardMarkup")
                     mess_txt = node.get("message", "").format(name=in_message.from_user.first_name)
                     message.send(in_message.chat.id, text=mess_txt)
 
@@ -251,9 +252,10 @@ if namespace.action == 'start':
                     request.set(node_variants=variants)
                     message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")    
                     if route!=my_bot.def_route:
-                        message.add_markup([my_bot.main_variant, 
-                                            variants["back_variant"],
-                                            variants["forvard_variant"]], "ReplyKeyboardMarkup")
+                        markup_variants = [my_bot.main_variant, variants["back_variant"]]
+                        if variants["forvard_variant"]:
+                            markup_variants.append(variants["forvard_variant"])
+                        message.add_markup(markup_variants, "ReplyKeyboardMarkup")
                     mess_txt = node.get("message", "")
                     message.send(in_message.from_user.id, text=mess_txt)
 
