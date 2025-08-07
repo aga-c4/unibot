@@ -1,2 +1,0 @@
-custom = "demo"
-defaultbot = "default"
