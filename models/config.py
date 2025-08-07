@@ -16,10 +16,10 @@ class Config:
     def __init__(self, *, custom:str, defaultbot:str="default", allow_configs:list=["main", "botstru"]):
         self.custom = custom
         self.defaultbot = defaultbot
-        self.def_config_pref = f"app.{defaultbot}.config" # Путь к директории с конфигурациями по умолчанию
-        self.config_pref = "app."+self.custom+".config"  # Путь к директории с конфигурациями перекрывающими деф.
-        self.def_config_dir = f"app/{defaultbot}/config" # Путь к директории с конфигурациями по умолчанию
-        self.config_dir = "app/"+self.custom+"/config"  # Путь к директории с конфигурациями перекрывающими деф.
+        self.def_config_pref = f"configs.{defaultbot}" # Путь к директории с конфигурациями по умолчанию
+        self.config_pref = "configs."+self.custom+""  # Путь к директории с конфигурациями перекрывающими деф.
+        self.def_config_dir = f"configs/{defaultbot}" # Путь к директории с конфигурациями по умолчанию
+        self.config_dir = "configs/"+self.custom  # Путь к директории с конфигурациями перекрывающими деф.
         if type(allow_configs) is list:
              for conf_alias in allow_configs:
                  if not conf_alias in self.allow_configs:

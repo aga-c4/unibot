@@ -9,7 +9,7 @@ venv/
 # Контрольные точки в Jupyter notebook лучше оставить в стороне
 .ipynb_checkpoints
 
-/app
+/configs
 /bots
 /services
 /*.sh

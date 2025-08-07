@@ -52,19 +52,6 @@ def createParser ():
     parser.add_argument ('action', nargs='?', type=str, default='')
     parser.add_argument ('--log_to', choices=['', 'console', 'file'], default='console')
     parser.add_argument ('--log_level', choices=['', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default='WARNING')
-    parser.add_argument ('--task_id', type=int, default=0)
-    parser.add_argument ('--job_status', choices=['', 'run', 'fin', 'error'], default='')
-    parser.add_argument ('--group_id', type=int, default=0)
-    parser.add_argument ('--metric_id', type=int, default=0)
-    parser.add_argument ('--active', type=int, default=-1)
-    parser.add_argument ('--limit', type=int, default=0)
-    parser.add_argument ('--source', choices=['', 'metrica', 'app_metrica'], default="")
-    parser.add_argument ('--fr_api', type=str, default="false")
-    parser.add_argument ('--granularity', choices=['', 'h1', 'd1', 'w1', 'm1'], default='')
-    parser.add_argument ('--datetime_to', type=str, default="")
-    parser.add_argument ('--group', type=str, default="")
-    parser.add_argument ('--message_lvl', type=str, default="")
-    parser.add_argument ('--news_alias', type=str, default="")
     return parser 
 
 # Обработка входных данных
