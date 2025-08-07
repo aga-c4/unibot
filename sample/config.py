@@ -1,0 +1,2 @@
+custom = "demo"
+defaultbot = "default"

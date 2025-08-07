@@ -13,3 +13,4 @@ venv/
 /bots
 /*.sh
 /*.bat
+/config.py
