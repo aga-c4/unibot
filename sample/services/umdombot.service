@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 Restart=always
-ExecStart=/home/aga-c4/unibot/bot.sh demo start --custom demo
+ExecStart=/home/aga-c4/unibot/bots/demo/bot.sh demo start --custom demo
 
 [Install]
 WantedBy=default.target

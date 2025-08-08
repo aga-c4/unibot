@@ -34,7 +34,6 @@ from datetime import datetime
 import logging
 import telebot 
 
-from config import custom, defconfig
 from models.config import Config
 from models.memsess import MemSess
 from models.message import Message
@@ -59,8 +58,6 @@ def createParser ():
 # Обработка входных данных
 parser = createParser()
 namespace = parser.parse_args(sys.argv[1:])
-
-from config import custom, defconfig
 
 botalias = ""
 if namespace.bot!='':
