@@ -3,11 +3,11 @@ class main:
     config = {
         "system": {
             # Путь к директории файлов на отдачу
-            "out_path": "tmp/out",
+            "out_path": "bots/demo/tmp/out",
             # Путь к директории файлов на прием
-            "in_path": "tmp/in",
+            "in_path": "bots/demo/tmp/in",
             # Путь к директории процессов бота
-            "proc_path": "tmp/process",
+            "proc_path": "bots/demo/tmp/process",
             # Максимальное время исполнения процесса, после чего он будет считаться завершенным, 
             # даже если нет сведения об этом (sec)
             "proc_ttl": 2 * 60 * 60, 

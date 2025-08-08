@@ -6,20 +6,20 @@ from models.sysbf import SysBf
 
 class Config:
 
-    defaultbot = "default"
+    defconfig = "default"
     custom = "default"
     allow_configs = ["main", "botstru", "devices"]
     use_def_configs = ["main", "botstru"]
     allow_save_configs = ["devices"]
     configs = {}
 
-    def __init__(self, *, custom:str, defaultbot:str="default", allow_configs:list=["main", "botstru"]):
+    def __init__(self, *, botalias:str, custom:str, defconfig:str="default", allow_configs:list=["main", "botstru"]):
         self.custom = custom
-        self.defaultbot = defaultbot
-        self.def_config_pref = f"configs.{defaultbot}" # Путь к директории с конфигурациями по умолчанию
-        self.config_pref = "configs."+self.custom+""  # Путь к директории с конфигурациями перекрывающими деф.
-        self.def_config_dir = f"configs/{defaultbot}" # Путь к директории с конфигурациями по умолчанию
-        self.config_dir = "configs/"+self.custom  # Путь к директории с конфигурациями перекрывающими деф.
+        self.defconfig = defconfig
+        self.def_config_pref = f"bots.{botalias}.configs.{defconfig}" # Путь к директории с конфигурациями по умолчанию
+        self.config_pref = f"bots.{botalias}.configs.{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
+        self.def_config_dir = f"bots/{botalias}/configs/{defconfig}" # Путь к директории с конфигурациями по умолчанию
+        self.config_dir = f"bots/{botalias}/configs/{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
         if type(allow_configs) is list:
              for conf_alias in allow_configs:
                  if not conf_alias in self.allow_configs:

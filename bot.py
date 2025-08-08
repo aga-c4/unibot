@@ -34,7 +34,7 @@ from datetime import datetime
 import logging
 import telebot 
 
-from config import custom, defaultbot
+from config import custom, defconfig
 from models.config import Config
 from models.memsess import MemSess
 from models.message import Message
@@ -49,7 +49,9 @@ start_time = time.time()
 # Обработка параметров
 def createParser ():
     parser = argparse.ArgumentParser()
+    parser.add_argument ('bot', nargs='?', type=str, default='')
     parser.add_argument ('action', nargs='?', type=str, default='')
+    parser.add_argument ('--custom', type=str, default='')
     parser.add_argument ('--log_to', choices=['', 'console', 'file'], default='console')
     parser.add_argument ('--log_level', choices=['', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default='WARNING')
     return parser 
@@ -58,7 +60,21 @@ def createParser ():
 parser = createParser()
 namespace = parser.parse_args(sys.argv[1:])
 
-logfile = 'log/bot' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.txt'
+from config import custom, defconfig
+
+botalias = ""
+if namespace.bot!='':
+    botalias = namespace.bot
+
+logfile = f"bots/{botalias}/logs/bot" + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.txt'
+
+# Базовая конфигурация бота, переопределяемая кастомной конфигурацией
+defconfig = "default"
+custom = botalias
+if namespace.custom!='':
+    custom = namespace.custom
+print(f"Try to run {botalias} with custom {custom}")      
+
 # Настройки логирования
 log_level = "WARNING"
 log_level_val = logging.WARNING
@@ -86,11 +102,12 @@ else:
     logging.basicConfig(level=log_level_val)
     print(f"log_level: {log_level} to console")      
 
-conf_obj = Config(custom=custom, 
-                defaultbot=defaultbot, 
-                allow_configs=["main", "botstru", "devices"]) 
+conf_obj = Config(botalias=botalias,
+                  custom=custom, 
+                  defconfig=defconfig, 
+                  allow_configs=["main", "botstru", "devices"]) 
 
-if namespace.action == 'start':
+if namespace.action == 'start' and botalias != "":
     config = conf_obj.get_config("main")
     my_bot = MyBot(conf_obj)
     message = Message(config["telegram"])
@@ -323,18 +340,24 @@ else:
 #####################
           
 Synopsys:
-    bot.sh [Command1] [Param1 Param_val1] [Param2 Param_val2] ...
-        
+    bot.sh [bot] [Command] [Param1 Param_val1] [Param2 Param_val2] ...
+
+bot:          
+    running bot alias from bots
+           
 Commands:
     start
 
 Params:
+    --custom - custom config alias (by default custom=bot)      
     --log_level (DEBUG | INFO | WARNING | ERROR | CRITICAL) - run with log level (WARNING by default)  
     --log_to (console | file) - logs print to (console by default)          
 
 Examples:
-    bot.sh start --log_level INFO --log_to file
-    bot.sh start                 
+    bot.sh demo start --log_level INFO --log_to file
+    bot.sh demo start --custom demo --log_level DEBUG
+    bot.sh demo start --custom demo 
+    bot.sh demo start                             
 """)
     
 

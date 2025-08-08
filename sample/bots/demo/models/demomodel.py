@@ -18,8 +18,8 @@ class DemoModel:
 
     def __init__(self, bot:MyBot):
         self.bot = bot
-        self.out_path = bot.config["system"].get("out_path", "tmp/out")
-        self.in_path = bot.config["system"].get("in_path", "tmp/in")
+        self.out_path = bot.config["system"].get("out_path", self.out_path)
+        self.in_path = bot.config["system"].get("in_path", self.in_path)
     
     def get_info(self):
         logging.info("DemoModel:get_message")
