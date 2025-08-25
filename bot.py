@@ -67,7 +67,7 @@ logfile = f"bots/{botalias}/logs/bot" + datetime.now().strftime('%Y-%m-%d-%H-%M-
 
 # Базовая конфигурация бота, переопределяемая кастомной конфигурацией
 defconfig = "default"
-custom = botalias
+custom = "default"
 if namespace.custom!='':
     custom = namespace.custom
 print(f"Try to run {botalias} with custom {custom}")      
@@ -346,7 +346,7 @@ Commands:
     start
 
 Params:
-    --custom - custom config alias (by default custom=bot)      
+    --custom - custom config alias (by default custom=default)      
     --log_level (DEBUG | INFO | WARNING | ERROR | CRITICAL) - run with log level (WARNING by default)  
     --log_to (console | file) - logs print to (console by default)          
 

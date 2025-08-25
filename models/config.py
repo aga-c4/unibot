@@ -17,9 +17,10 @@ class Config:
         self.custom = custom
         self.defconfig = defconfig
         self.def_config_pref = f"bots.{botalias}.configs.{defconfig}" # Путь к директории с конфигурациями по умолчанию
-        self.config_pref = f"bots.{botalias}.configs.{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
         self.def_config_dir = f"bots/{botalias}/configs/{defconfig}" # Путь к директории с конфигурациями по умолчанию
-        self.config_dir = f"bots/{botalias}/configs/{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
+        if custom != defconfig:
+            self.config_pref = f"bots.{botalias}.configs.{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
+            self.config_dir = f"bots/{botalias}/configs/{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
         if type(allow_configs) is list:
              for conf_alias in allow_configs:
                  if not conf_alias in self.allow_configs:
