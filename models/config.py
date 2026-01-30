@@ -18,9 +18,8 @@ class Config:
         self.defconfig = defconfig
         self.def_config_pref = f"bots.{botalias}.configs.{defconfig}" # Путь к директории с конфигурациями по умолчанию
         self.def_config_dir = f"bots/{botalias}/configs/{defconfig}" # Путь к директории с конфигурациями по умолчанию
-        if custom != defconfig:
-            self.config_pref = f"bots.{botalias}.configs.{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
-            self.config_dir = f"bots/{botalias}/configs/{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
+        self.config_pref = f"bots.{botalias}.configs.{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
+        self.config_dir = f"bots/{botalias}/configs/{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
         if type(allow_configs) is list:
              for conf_alias in allow_configs:
                  if not conf_alias in self.allow_configs:
@@ -30,6 +29,8 @@ class Config:
                 self._load_config(conf_alias)
 
     def save_config(self, config_data, config_type:str="main"):
+        if self.config_dir==self.def_config_dir:
+            return False
         config_file = config_type.lower()
         if config_file in self.allow_save_configs:
             user_conf_file = os.path.join(self.config_dir, config_file)+".json"
@@ -44,6 +45,8 @@ class Config:
             return False    
         
     def delete_config(self, config_type:str="main"):  
+        if self.config_dir==self.def_config_dir:
+            return False
         config_file = config_type.lower()
         user_conf_file = os.path.join(self.config_dir, config_file)+".json"  
         os.remove(user_conf_file)  
@@ -77,7 +80,7 @@ class Config:
                 logging.info("Load def config {0} from {1}".format(config_type, config_def_path))
                 config_data = getattr(def_config_model, "config", {})
             
-            if os.path.isfile(config_path):
+            if config_path!=config_def_path and os.path.isfile(config_path):
                 config_model = SysBf.class_factory(config_module, config_type)
                 logging.info("Load config {0} from {1}".format(config_type, config_path))
                 add_config_data = getattr(config_model, "config", {})

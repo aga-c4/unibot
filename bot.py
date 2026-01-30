@@ -144,8 +144,8 @@ if namespace.action == 'start' and botalias != "":
                 node = Node(request)
 
                 variants = node.get_variants(request)    
-                message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")    
-                message.send(in_message.chat.id, text="Привет, {name}! Я помогу с управлением домом".format(name=in_message.from_user.first_name))
+                message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")   
+                message.send(in_message.chat.id, text=config["bot"].get("start_hint", "Привет, {name}!").format(name=in_message.from_user.first_name))
                 
                 # Надо вызвать функцию ноды
                 if node.get("contoller", False) and node.get("contoller_action", False):
