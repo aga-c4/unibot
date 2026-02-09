@@ -19,6 +19,8 @@ class MyBot:
     back_variant = "Назад"
     dop_variant = ""
     dop_variant_route = ["main"]
+    dop_variant_noauth = ""
+    dop_variant_route_noauth = ["noauth"]
 
 
     def __init__(self, conf_obj:Config):
@@ -35,6 +37,8 @@ class MyBot:
         self.back_variant = self.config["bot"]["back_variant"]   
         self.dop_variant = self.config["bot"]["nav_dop_variant"]
         self.dop_variant_route = self.config["bot"]["nav_dop_variant_route"]      
+        self.dop_variant_noauth = self.config["bot"]["nav_dop_variant_noauth"]
+        self.dop_variant_route_noauth = self.config["bot"]["nav_dop_variant_route_noauth"]      
 
     def reload_configs(self):
         self.conf_obj.clean_config_cache()
@@ -125,6 +129,8 @@ class MyBot:
             cur_route = prev_route  
         elif variant==self.dop_variant:
             cur_route = self.dop_variant_route    
+        elif variant==self.dop_variant_noauth:
+            cur_route = self.dop_variant_route_noauth        
         else:
             node = self.get_node_by_route(route)
             if "variants" in node:

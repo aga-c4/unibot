@@ -104,6 +104,73 @@ conf_obj = Config(botalias=botalias,
                   defconfig=defconfig, 
                   allow_configs=["main", "botstru", "devices"]) 
 
+def use_route(my_bot:MyBot, in_message, view_route_mess:bool=True):
+    # Идентентификация пользователя
+    user = User(conf_obj, in_message.from_user.id)
+    sess = MemSess(in_message.from_user.id)
+
+    # Маршрутизация
+    same_route = False
+    if user.id!=0:    
+        route = sess.get("route", my_bot.def_route)
+        pgnom = 0
+    else:    
+        route = sess.get("route", my_bot.def_route_noauth)
+        pgnom = sess.get("pgnom", 0)
+
+    if user.id!=0:  
+        btn_pg_prefix  = config["bot"]["btn_pg_prefix"]
+        btn_pg_prefix_len = len(btn_pg_prefix)
+        if in_message.text.startswith(btn_pg_prefix) and in_message.text[btn_pg_prefix_len:].isdigit():
+            pgnom = int(in_message.text[btn_pg_prefix_len:])
+            if pgnom>0:
+                pgnom -= 1   
+        else:
+            prev_route = str(route)
+            route = my_bot.get_route_by_variant(user, route, in_message.text)
+            sess.set({"route": route})
+            if str(route)!=prev_route:
+                pgnom = 0
+            elif route != my_bot.def_route:
+                same_route = True    
+        sess.set({"pgnom": pgnom})            
+
+    request = Request(
+        bot = my_bot,
+        user = user, 
+        session = sess, 
+        route = route,
+        same_route = same_route,
+        pgnom = pgnom,
+        message = in_message,
+        chatid = in_message.chat.id
+        )              
+    
+    logging.info(f"{user.id}: route: {str(route)}  pgnom: {pgnom+1}")
+
+    # Открытие ноды
+    node = Node(request)
+
+    # Вывод кнопок основной навигации и сообщения роута
+    if view_route_mess and not same_route:
+        variants = node.get_variants(request)
+        request.set(node_variants=variants)
+        message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")    
+        if route!=my_bot.def_route and route!=my_bot.def_route_noauth:
+            markup_variants = [my_bot.main_variant, variants["back_variant"]]
+            if variants["forvard_variant"]:
+                markup_variants.append(variants["forvard_variant"])
+            message.add_markup(markup_variants, "ReplyKeyboardMarkup")
+        mess_txt = node.get("message", "").format(name=in_message.from_user.first_name)
+        message.send(in_message.chat.id, text=mess_txt)
+
+    # Надо вызвать функцию ноды
+    if node.get("contoller", False) and node.get("contoller_action", False):
+        node_model = SysBf.class_factory(config["bot"]["bot_controllers_prefix"]+node.get("contoller").lower(), node.get("contoller"))
+        logging.info("{0}: run {1}.{2}".format(user.id,node.get("contoller"),node.get("contoller_action")))
+        SysBf.call_method_fr_obj(node_model, node.get("contoller_action"), request)
+
+
 if namespace.action == 'start' and botalias != "":
     config = conf_obj.get_config("main")
     my_bot = MyBot(conf_obj)
@@ -115,209 +182,29 @@ if namespace.action == 'start' and botalias != "":
 
         @tgbot.message_handler(commands=['start'])
         def start(in_message):
-            try:
-                # Идентентификация пользователя
-                user = User(conf_obj, in_message.from_user.id)
-
-                # Маршрутизация
-                if user.has_role("user"):    
-                    route = my_bot.def_route
-                    sess = MemSess(in_message.from_user.id)
-                    sess.clear_session()
-                    sess.set({"route": route})
-                    sess.set({"pgnom": 0})
-                else:
-                    route = ["noauth"]
-                    sess = None    
-
-                request = Request(
-                    bot = my_bot,
-                    user = user, 
-                    session = sess, 
-                    route = route,
-                    pgnom = 0,
-                    message = in_message,
-                    chatid = in_message.chat.id
-                    )    
-
-                # Открытие ноды
-                node = Node(request)
-
-                variants = node.get_variants(request)    
-                message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")   
-                message.send(in_message.chat.id, text=config["bot"].get("start_hint", "Привет, {name}!").format(name=in_message.from_user.first_name))
-                
-                # Надо вызвать функцию ноды
-                if node.get("contoller", False) and node.get("contoller_action", False):
-                    node_model = SysBf.class_factory(config["bot"]["bot_controllers_prefix"]+node.get("contoller").lower(), node.get("contoller"))
-                    logging.info("{0}: run {1}.{2}".format(user.id,node.get("contoller"),node.get("contoller_action")))
-                    SysBf.call_method_fr_obj(node_model, node.get("contoller_action"), request)
-            except:
-                logging.warning("Error in message_handler:commands:start")     
+            # try:
+                use_route(my_bot, in_message)
+            # except:
+            #     logging.warning("Error in message_handler:commands:start")     
                 
         @tgbot.message_handler(content_types=['text'])
         def func(in_message):
             try:
-                # Идентентификация пользователя
-                user = User(conf_obj, in_message.from_user.id)
-
-                # Маршрутизация
-                same_route = False
-                if user.has_role("user"):    
-                    sess = MemSess(in_message.from_user.id)
-                    route = sess.get("route", my_bot.def_route)
-                    pgnom = sess.get("pgnom", 0)
-                    btn_pg_prefix  = config["bot"]["btn_pg_prefix"]
-                    btn_pg_prefix_len = len(btn_pg_prefix)
-                    if in_message.text.startswith(btn_pg_prefix) and in_message.text[btn_pg_prefix_len:].isdigit():
-                        pgnom = int(in_message.text[btn_pg_prefix_len:])
-                        if pgnom>0:
-                            pgnom -= 1   
-                    else:
-                        prev_route = str(route)
-                        route = my_bot.get_route_by_variant(user, route, in_message.text)
-                        sess.set({"route": route})
-                        if str(route)!=prev_route:
-                            pgnom = 0
-                        elif route != my_bot.def_route:
-                            same_route = True    
-                    sess.set({"pgnom": pgnom})            
-                else:
-                    route = ["noauth"]
-                    sess = None    
-                    pgnom = 0
-
-                request = Request(
-                    bot = my_bot,
-                    user = user, 
-                    session = sess, 
-                    route = route,
-                    same_route = same_route,
-                    pgnom = pgnom,
-                    message = in_message,
-                    chatid = in_message.chat.id
-                    )              
-                
-                logging.info(f"{user.id}: route: {str(route)}  pgnom: {pgnom+1}")
-
-                # Открытие ноды
-                node = Node(request)
-
-                if not same_route:
-                    variants = node.get_variants(request)
-                    request.set(node_variants=variants)
-                    message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")    
-                    if route!=my_bot.def_route:
-                        markup_variants = [my_bot.main_variant, variants["back_variant"]]
-                        if variants["forvard_variant"]:
-                            markup_variants.append(variants["forvard_variant"])
-                        message.add_markup(markup_variants, "ReplyKeyboardMarkup")
-                    mess_txt = node.get("message", "").format(name=in_message.from_user.first_name)
-                    message.send(in_message.chat.id, text=mess_txt)
-
-                # Надо вызвать функцию ноды
-                if node.get("contoller", False) and node.get("contoller_action", False):
-                    node_model = SysBf.class_factory(config["bot"]["bot_controllers_prefix"]+node.get("contoller").lower(), node.get("contoller"))
-                    logging.info("{0}: run {1}.{2}".format(user.id,node.get("contoller"),node.get("contoller_action")))
-                    SysBf.call_method_fr_obj(node_model, node.get("contoller_action"), request)
+                use_route(my_bot, in_message)
             except:
                 logging.warning("Error in message_handler:content_types:text")             
 
         @tgbot.callback_query_handler()
         def callback_query(in_message):
             try:
-                # Идентентификация пользователя
-                user = User(conf_obj, in_message.from_user.id)
-
-                # Маршрутизация
-                if user.has_role("user"):    
-                    sess = MemSess(in_message.from_user.id)
-                    prev_route = sess.get("route", my_bot.def_route)
-                    pgnom = sess.get("pgnom", 0)
-                    route = my_bot.get_route_by_str(user, in_message.data)
-                    if route!=prev_route:
-                        pgnom = 0
-                        sess.set({"route": route})
-                        sess.set({"pgnom": pgnom})   
-                else:
-                    route = ["noauth"]
-                    sess = None    
-                    pgnom = 0
-
-                request = Request(
-                    bot = my_bot,
-                    user = user, 
-                    session = sess, 
-                    route = route,
-                    pgnom = pgnom,
-                    message = in_message,
-                    chatid = in_message.from_user.id,
-                    is_script_command = True
-                    )              
-                
-                logging.info(f"{user.id}: route: {str(route)}  pgnom: {pgnom+1}")
-
-                # Открытие ноды
-                node = Node(request)
-
-                spl = in_message.data.split(':')
-                if len(spl)==1:
-                    variants = node.get_variants(request)
-                    request.set(node_variants=variants)
-                    message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")    
-                    if route!=my_bot.def_route:
-                        markup_variants = [my_bot.main_variant, variants["back_variant"]]
-                        if variants["forvard_variant"]:
-                            markup_variants.append(variants["forvard_variant"])
-                        message.add_markup(markup_variants, "ReplyKeyboardMarkup")
-                    mess_txt = node.get("message", "")
-                    message.send(in_message.from_user.id, text=mess_txt)
-
-                # Надо вызвать функцию ноды
-                if node.get("contoller", False) and node.get("contoller_action", False):
-                    node_model = SysBf.class_factory(config["bot"]["bot_controllers_prefix"]+node.get("contoller").lower(), node.get("contoller"))
-                    logging.info("{0}: run {1}.{2}".format(user.id,node.get("contoller"),node.get("contoller_action")))
-                    SysBf.call_method_fr_obj(node_model, node.get("contoller_action"), request)
+                use_route(my_bot, in_message)
             except:
                 logging.warning("Error in callback_query_handler")    
 
         @tgbot.message_handler(content_types=['document'])
         def handle_docs_photo(in_message):
             try:
-                # Идентентификация пользователя
-                user = User(conf_obj, in_message.from_user.id)
-
-                # Маршрутизация
-                if user.has_role("user"):    
-                    sess = MemSess(in_message.from_user.id)
-                    route = sess.get("route", my_bot.def_route)
-                    pgnom = sess.get("pgnom", 0)
-                else:
-                    route = ["noauth"]
-                    sess = None    
-                    pgnom = 0
-
-                request = Request(
-                    bot = my_bot,
-                    user = user, 
-                    session = sess, 
-                    route = route,
-                    pgnom = pgnom,
-                    message = in_message,
-                    chatid = in_message.from_user.id,
-                    is_script_command = True
-                    )              
-                
-                logging.info(f"{user.id}: route: {str(route)}  pgnom: {pgnom+1}")
-
-                # Открытие ноды
-                node = Node(request)
-
-                # Надо вызвать функцию ноды
-                if node.get("contoller", False) and node.get("contoller_action", False):
-                    node_model = SysBf.class_factory(config["bot"]["bot_controllers_prefix"]+node.get("contoller").lower(), node.get("contoller"))
-                    logging.info("{0}: run {1}.{2}".format(user.id,node.get("contoller"),node.get("contoller_action")))
-                    SysBf.call_method_fr_obj(node_model, node.get("contoller_action"), request)
+                use_route(my_bot, in_message, view_route_mess=False)
             except:
                 logging.warning("Error in message_handler:content_types:document")            
 

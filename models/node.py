@@ -3,14 +3,14 @@ from models.request import Request
 class Node:
 
     route = []
-    _data = {}
+    _data = None
+
 
     def __init__(self, request:Request):
         self.route = request.route
-        if request.user.no_roles:
+        self._data = self.get_node_by_route(request)
+        if self._data is None:
             self._data = self.get_node_by_route(request, request.bot.def_route_noauth)
-        else:        
-            self._data = self.get_node_by_route(request)
 
     def get_node_by_route(self, request:Request, def_route:str=""):
         route = request.route
@@ -20,11 +20,15 @@ class Node:
             else:    
                 route = request.bot.def_route   
         node = request.bot.bot_stru
+        node_exist = False
         for key in route:   
             view_roles = node["variants"][key].get("access", {}).get("view", None)
             if "variants" in node and key in node["variants"] and \
                 (view_roles is None or request.user.has_role(node["variants"][key].get("access", {}).get("view", None))):
-                node = node["variants"][key]       
+                node = node["variants"][key]    
+                node_exist = True   
+        if not node_exist:
+            node = None    
         return node 
 
     def get_variants(self, request:Request):

@@ -8,6 +8,7 @@ class Config:
 
     defconfig = "default"
     custom = "default"
+    botalias = ""
     allow_configs = ["main", "botstru", "devices"]
     use_def_configs = ["main", "botstru"]
     allow_save_configs = ["devices"]
@@ -16,6 +17,7 @@ class Config:
     def __init__(self, *, botalias:str, custom:str, defconfig:str="default", allow_configs:list=["main", "botstru"]):
         self.custom = custom
         self.defconfig = defconfig
+        self.botalias = botalias
         self.def_config_pref = f"bots.{botalias}.configs.{defconfig}" # Путь к директории с конфигурациями по умолчанию
         self.def_config_dir = f"bots/{botalias}/configs/{defconfig}" # Путь к директории с конфигурациями по умолчанию
         self.config_pref = f"bots.{botalias}.configs.{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
