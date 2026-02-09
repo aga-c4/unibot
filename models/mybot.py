@@ -31,7 +31,9 @@ class MyBot:
         self.locations = conf_obj.get_config("devices").get("locations", {})
         self.devices = conf_obj.get_config("devices").get("devices", {})
         if "def_route" in self.config["bot"]:
-            self.def_route = self.config["bot"]["def_route"]   
+            self.def_route = self.config["bot"]["def_route"]  
+        if "def_route_noauth" in self.config["bot"]:
+            self.def_route_noauth = self.config["bot"]["def_route_noauth"]       
         self.main_variant = self.config["bot"]["main_variant"]    
         self.forvard_variant = self.config["bot"]["forvard_variant"]   
         self.back_variant = self.config["bot"]["back_variant"]   
@@ -47,7 +49,9 @@ class MyBot:
         self.locations = self.conf_obj.get_config("devices").get("locations", {})
         self.devices = self.conf_obj.get_config("devices").get("devices", {})
         if "def_route" in self.config["bot"]:
-            self.def_route = self.config["bot"]["def_route"]   
+            self.def_route = self.config["bot"]["def_route"]  
+        if "def_route_noauth" in self.config["bot"]:
+            self.def_route_noauth = self.config["bot"]["def_route_noauth"]            
         print(self.locations)    
         logging.info("Bot reload configs")
 
@@ -85,14 +89,19 @@ class MyBot:
         return result
       
     def get_route_by_str(self, user:User, route_str:str=None): 
+        if user.found_user:
+            def_route = self.def_route    
+        else:
+            def_route = self.def_route_noauth
         cur_route = []
         route_str_upd = route_str.strip()
         if route_str_upd == "":
-            return self.def_route
+            return def_route
+        
         all_route_list = route_str_upd.split(':')
         route_list = all_route_list[0].split('.')
         if len(route_list) == 0:
-            route_list = self.def_route   
+            route_list = def_route
         
         node = self.get_node_by_route([])
         is_redirect = False
@@ -111,18 +120,22 @@ class MyBot:
             if is_redirect:
                 break                                 
         if len(cur_route) == 0:
-            return self.def_route                
+            return def_route                 
         return cur_route
 
     def get_route_by_variant(self, user:User, route=None, variant:str=""):
         cur_route = route[:]
+        if user.found_user:
+            def_route = self.def_route    
+        else:
+            def_route = self.def_route_noauth
         if route is None:
-            cur_route = self.def_route[:]
+            cur_route = def_route[:]
         elif variant==self.main_variant:
-            cur_route = self.def_route[:]
+            cur_route = def_route[:]
         elif variant==self.back_variant:
             if len(route)<2:
-                prev_route = self.def_route[:]
+                prev_route = def_route[:]
             else:
                 prev_route = route[:]
                 del prev_route[-1]

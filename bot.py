@@ -45,6 +45,72 @@ from models.node import Node
 
 start_time = time.time() 
 
+def use_route(my_bot:MyBot, in_message, view_route_mess:bool=True):
+    # Идентентификация пользователя
+    user = User(conf_obj, in_message.from_user.id)
+    sess = MemSess(in_message.from_user.id)
+
+    # Маршрутизация
+    same_route = False
+    if user.found_user:    
+        route = sess.get("route", my_bot.def_route)
+        pgnom = 0
+    else:    
+        route = sess.get("route", my_bot.def_route_noauth)
+        pgnom = sess.get("pgnom", 0)
+
+    if user.found_user:  
+        btn_pg_prefix  = config["bot"]["btn_pg_prefix"]
+        btn_pg_prefix_len = len(btn_pg_prefix)
+        if in_message.text.startswith(btn_pg_prefix) and in_message.text[btn_pg_prefix_len:].isdigit():
+            pgnom = int(in_message.text[btn_pg_prefix_len:])
+            if pgnom>0:
+                pgnom -= 1   
+        else:
+            prev_route = str(route)
+            route = my_bot.get_route_by_variant(user, route, in_message.text)
+            sess.set({"route": route})
+            if str(route)!=prev_route:
+                pgnom = 0
+            elif route != my_bot.def_route:
+                same_route = True    
+        sess.set({"pgnom": pgnom})            
+
+    request = Request(
+        bot = my_bot,
+        user = user, 
+        session = sess, 
+        route = route,
+        same_route = same_route,
+        pgnom = pgnom,
+        message = in_message,
+        chatid = in_message.chat.id
+        )              
+    
+    logging.info(f"{user.id}: route: {str(route)}  pgnom: {pgnom+1}")
+
+    # Открытие ноды
+    node = Node(request)
+
+    # Вывод кнопок основной навигации и сообщения роута
+    if view_route_mess and not same_route:
+        variants = node.get_variants(request)
+        request.set(node_variants=variants)
+        message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")    
+        if route!=my_bot.def_route and route!=my_bot.def_route_noauth:
+            markup_variants = [my_bot.main_variant, variants["back_variant"]]
+            if variants["forvard_variant"]:
+                markup_variants.append(variants["forvard_variant"])
+            message.add_markup(markup_variants, "ReplyKeyboardMarkup")
+        mess_txt = node.get("message", "").format(name=in_message.from_user.first_name)
+        message.send(in_message.chat.id, text=mess_txt)
+
+    # Надо вызвать функцию ноды
+    if node.get("contoller", False) and node.get("contoller_action", False):
+        node_model = SysBf.class_factory(config["bot"]["bot_controllers_prefix"]+node.get("contoller").lower(), node.get("contoller"))
+        logging.info("{0}: run {1}.{2}".format(user.id,node.get("contoller"),node.get("contoller_action")))
+        SysBf.call_method_fr_obj(node_model, node.get("contoller_action"), request)
+
 # Обработка параметров
 def createParser ():
     parser = argparse.ArgumentParser()
@@ -103,73 +169,6 @@ conf_obj = Config(botalias=botalias,
                   custom=custom, 
                   defconfig=defconfig, 
                   allow_configs=["main", "botstru", "devices"]) 
-
-def use_route(my_bot:MyBot, in_message, view_route_mess:bool=True):
-    # Идентентификация пользователя
-    user = User(conf_obj, in_message.from_user.id)
-    sess = MemSess(in_message.from_user.id)
-
-    # Маршрутизация
-    same_route = False
-    if user.id!=0:    
-        route = sess.get("route", my_bot.def_route)
-        pgnom = 0
-    else:    
-        route = sess.get("route", my_bot.def_route_noauth)
-        pgnom = sess.get("pgnom", 0)
-
-    if user.id!=0:  
-        btn_pg_prefix  = config["bot"]["btn_pg_prefix"]
-        btn_pg_prefix_len = len(btn_pg_prefix)
-        if in_message.text.startswith(btn_pg_prefix) and in_message.text[btn_pg_prefix_len:].isdigit():
-            pgnom = int(in_message.text[btn_pg_prefix_len:])
-            if pgnom>0:
-                pgnom -= 1   
-        else:
-            prev_route = str(route)
-            route = my_bot.get_route_by_variant(user, route, in_message.text)
-            sess.set({"route": route})
-            if str(route)!=prev_route:
-                pgnom = 0
-            elif route != my_bot.def_route:
-                same_route = True    
-        sess.set({"pgnom": pgnom})            
-
-    request = Request(
-        bot = my_bot,
-        user = user, 
-        session = sess, 
-        route = route,
-        same_route = same_route,
-        pgnom = pgnom,
-        message = in_message,
-        chatid = in_message.chat.id
-        )              
-    
-    logging.info(f"{user.id}: route: {str(route)}  pgnom: {pgnom+1}")
-
-    # Открытие ноды
-    node = Node(request)
-
-    # Вывод кнопок основной навигации и сообщения роута
-    if view_route_mess and not same_route:
-        variants = node.get_variants(request)
-        request.set(node_variants=variants)
-        message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")    
-        if route!=my_bot.def_route and route!=my_bot.def_route_noauth:
-            markup_variants = [my_bot.main_variant, variants["back_variant"]]
-            if variants["forvard_variant"]:
-                markup_variants.append(variants["forvard_variant"])
-            message.add_markup(markup_variants, "ReplyKeyboardMarkup")
-        mess_txt = node.get("message", "").format(name=in_message.from_user.first_name)
-        message.send(in_message.chat.id, text=mess_txt)
-
-    # Надо вызвать функцию ноды
-    if node.get("contoller", False) and node.get("contoller_action", False):
-        node_model = SysBf.class_factory(config["bot"]["bot_controllers_prefix"]+node.get("contoller").lower(), node.get("contoller"))
-        logging.info("{0}: run {1}.{2}".format(user.id,node.get("contoller"),node.get("contoller_action")))
-        SysBf.call_method_fr_obj(node_model, node.get("contoller_action"), request)
-
 
 if namespace.action == 'start' and botalias != "":
     config = conf_obj.get_config("main")
@@ -246,3 +245,4 @@ Examples:
     
 
 print("----------------")    
+

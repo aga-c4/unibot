@@ -17,8 +17,11 @@ class Node:
         if request.route is None or not type(request.route) is list:
             if def_route!="":
                 route = def_route
-            else:    
-                route = request.bot.def_route   
+            else:  
+                if request.user.found_user:  
+                    route = request.bot.def_route   
+                else:
+                    route = request.bot.def_route_noauth   
         node = request.bot.bot_stru
         node_exist = False
         for key in route:   
