@@ -55,7 +55,7 @@ class User:
     def has_role(self, role, mode:str=""):
         """mode='all' - отключение авто True для admin""" 
         if self.is_root \
-            or (not role is None and "noroles" in self._data["roles"]) \
+            or (not role is None and role=="noroles") \
             or (mode!="all" and "admin" in self._data["roles"]) \
             or (not role is None and role in self._data["roles"]): 
             return True

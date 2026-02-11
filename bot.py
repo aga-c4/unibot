@@ -45,7 +45,7 @@ from models.node import Node
 
 start_time = time.time() 
 
-def use_route(my_bot:MyBot, in_message, view_route_mess:bool=True):
+def use_route(my_bot:MyBot, message:Message, in_message, view_route_mess:bool=True):
     # Идентентификация пользователя
     user = User(conf_obj, in_message.from_user.id)
     sess = MemSess(in_message.from_user.id)
@@ -94,17 +94,17 @@ def use_route(my_bot:MyBot, in_message, view_route_mess:bool=True):
 
     # Вывод кнопок основной навигации и сообщения роута
     if view_route_mess and not same_route:
-        variants = node.get_variants(request)
+        variants = node.get_variants(request) 
         request.set(node_variants=variants)
-        message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")    
+        message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")   
         if route!=my_bot.def_route and route!=my_bot.def_route_noauth:
             markup_variants = [my_bot.main_variant, variants["back_variant"]]
             if variants["forvard_variant"]:
                 markup_variants.append(variants["forvard_variant"])
             message.add_markup(markup_variants, "ReplyKeyboardMarkup")
-        mess_txt = node.get("message", "").format(name=in_message.from_user.first_name)
+        mess_txt = node.get("message", "").format(name=in_message.from_user.first_name) 
         message.send(in_message.chat.id, text=mess_txt)
-
+                 
     # Надо вызвать функцию ноды
     if node.get("contoller", False) and node.get("contoller_action", False):
         node_model = SysBf.class_factory(config["bot"]["bot_controllers_prefix"]+node.get("contoller").lower(), node.get("contoller"))
@@ -181,29 +181,29 @@ if namespace.action == 'start' and botalias != "":
 
         @tgbot.message_handler(commands=['start'])
         def start(in_message):
-            # try:
-                use_route(my_bot, in_message)
-            # except:
-            #     logging.warning("Error in message_handler:commands:start")     
+            try:
+                use_route(my_bot=my_bot, message=message, in_message=in_message)
+            except:
+                logging.warning("Error in message_handler:commands:start")     
                 
         @tgbot.message_handler(content_types=['text'])
         def func(in_message):
             try:
-                use_route(my_bot, in_message)
+                 use_route(my_bot=my_bot, message=message, in_message=in_message)
             except:
                 logging.warning("Error in message_handler:content_types:text")             
 
         @tgbot.callback_query_handler()
         def callback_query(in_message):
             try:
-                use_route(my_bot, in_message)
+                 use_route(my_bot=my_bot, message=message, in_message=in_message)
             except:
                 logging.warning("Error in callback_query_handler")    
 
         @tgbot.message_handler(content_types=['document'])
         def handle_docs_photo(in_message):
             try:
-                use_route(my_bot, in_message, view_route_mess=False)
+                 use_route(my_bot=my_bot, message=message, in_message=in_message, view_route_mess=False)
             except:
                 logging.warning("Error in message_handler:content_types:document")            
 
