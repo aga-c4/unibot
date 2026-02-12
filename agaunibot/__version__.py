@@ -1,0 +1,9 @@
+__title__ = "agaunibot"
+__description__ = "Python Telegram bot framework."
+__url__ = "https://github.com/aga-c4/agaunibot"
+__version__ = "0.9.1"
+__build__ = 0x000001
+__author__ = "Konstantin Khachaturian"
+__author_email__ = "aga-c4@yandex.ru"
+__license__ = "BSD 2-Clause License"
+__copyright__ = "Copyright Konstantin Khachaturian"
