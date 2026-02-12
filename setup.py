@@ -13,9 +13,12 @@ setup(
     install_requires=requirements,
     author="Konstantin Khachaturian",
     author_email="aga-c4@yandex.ru",
+    license="BSD License (2-Clause)",
     description="Telegram bot framework",
+    homepage="https://github.com/aga-c4/agaunibot",
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
+    platform="OS Independent",
     classifiers=[
         "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: BSD License (2-Clause)",
