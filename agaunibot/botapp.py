@@ -25,7 +25,7 @@ class BotApp:
 #####################
           
 Synopsys:
-    bot.sh [bot] [Command] [Param1 Param_val1] [Param2 Param_val2] ...
+    bot.sh [Command] [Param1 Param_val1] [Param2 Param_val2] ...
 
 bot:          
     running bot alias from bots
@@ -59,10 +59,6 @@ Examples:
         self.message = Message(config["telegram"])
         if self.message.get_status():
             self.message.send(config["telegram"]["channels"]["domchat"], text=f"Bot started!") 
-        # Создадим TMP папки, если таковых нет  
-        self.out_path = config["system"].get("out_path", self.out_path)
-        self.in_path = config["system"].get("in_path", self.in_path)
-        self.in_path = config["proc_path"].get("proc_path", self.in_path)
     
     def set(self, **kwargs):
         """set(bot=bot, config=config, message=message...)"""

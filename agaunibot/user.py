@@ -25,7 +25,7 @@ class User:
         if user_id_str in self.config_obj.get_config()["system"]["telegram_admin_ids"]:
             self.is_root = True
             self.found_user = True
-        self.users_file_path = f"configs/{custom}/users.json"
+        self.users_file_path = f"app/configs/{custom}/users.json"
         users_reestr = self.get_users()          
         if user_id_str in users_reestr:
             self.found_user = True   

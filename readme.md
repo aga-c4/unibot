@@ -11,7 +11,13 @@ pip3 install -r requirements.txt
 3. Припишите телеграм идентификатор админа в config.system.telegram_admin_ids в конфигурации main.py
 4. Пропишите параметры доступа к боту и каналу в config.telegram
 5. Запуск бота осуществляется скриптом bot.sh или запуском python3 bot.py
-6. Можно запустить бота под Docker, для этого из корня выполните docker-compose up
+```
+python3 bot.py start --custom demo --log_level INFO
+```
+6. Можно запустить бота под Docker, для этого из корня выполните
+```
+docker-compose up
+```
 7. Вы можете установить фреймворк через pip, выполнив команду
 ```
 pip install "agaunibot" @ git+"https://github.com/aga-c4/agaunibot"

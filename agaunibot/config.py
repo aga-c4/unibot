@@ -16,17 +16,17 @@ class Config:
     def __init__(self, *, custom:str, defconfig:str="default", allow_configs:list=["main", "botstru"]):
         self.custom = custom
         self.defconfig = defconfig
-        self.def_config_pref = f"configs.{defconfig}" # Путь к директории с конфигурациями по умолчанию
-        self.def_config_dir = f"configs/{defconfig}" # Путь к директории с конфигурациями по умолчанию
-        self.config_pref = f"configs.{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
-        self.config_dir = f"configs/{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
+        self.def_config_pref = f"app.configs.{defconfig}" # Путь к директории с конфигурациями по умолчанию
+        self.def_config_dir = f"app/configs/{defconfig}" # Путь к директории с конфигурациями по умолчанию
+        self.config_pref = f"app.configs.{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
+        self.config_dir = f"app/configs/{self.custom}"  # Путь к директории с конфигурациями перекрывающими деф.
         if type(allow_configs) is list:
              for conf_alias in allow_configs:
                  if not conf_alias in self.allow_configs:
                      self.allow_configs.append(conf_alias)
              allow_configs
         for conf_alias in allow_configs:
-                self._load_config(conf_alias)
+            self._load_config(conf_alias)       
 
     def save_config(self, config_data, config_type:str="main"):
         if self.config_dir==self.def_config_dir:
