@@ -1,6 +1,4 @@
 import logging
-import requests
-import json
 
 from .user import User
 from .config import Config
@@ -158,12 +156,4 @@ class MyBot:
         return cur_route
      
     def get_ip(self):
-        try:
-            response = requests.get("https://api.ipify.org/?format=json")
-            res = response.text
-            if res:
-                return json.loads(res).get("ip", "IP not found")     
-            return "IP not found" 
-        except:
-            logging.info("Request api.ipify.org!")
-            return "IP not found" 
+        return "IP not found" 
