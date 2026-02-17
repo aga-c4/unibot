@@ -14,3 +14,4 @@ venv/
 /demobot.service
 /docker-compose.yml
 /dockerfile
+/locale
