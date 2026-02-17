@@ -1,0 +1,54 @@
+# Spanish translations for aga-c package.
+# Copyright (C) 2026 THE aga-c'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the aga-c package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: aga-c 4\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-15 18:05+0300\n"
+"PO-Revision-Date: 2026-02-15 18:05+0300\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#
+msgid "Сообщите администратору идентификатор, который вы увидите"
+msgstr "Сообщите администратору идентификатор, который вы увидите"
+
+#
+msgid "Ваш идентификатор: "
+msgstr "Ваш идентификатор: "
+
+#
+msgid "Зарегистрироваться"
+msgstr "Зарегистрироваться"
+
+#
+msgid "Test"
+msgstr "Test"
+
+#
+msgid "Авторизуйтесь или зарегистрируйтесь для начала работы с системой"
+msgstr "Авторизуйтесь или зарегистрируйтесь для начала работы с системой"
+
+#
+msgid "Введите код, полученный на почту"
+msgstr "Введите код, полученный на почту"
+
+#
+msgid "Авторизоваться"
+msgstr "Авторизоваться"
+
+#
+msgid "Авторизуйтесь для начала работы с системой"
+msgstr "Авторизуйтесь для начала работы с системой"
+
+#
+msgid "Это демо пример работы фреймворка, на базе которого можно создать телеграм бота."
+msgstr "Это демо пример работы фреймворка, на базе которого можно создать телеграм бота."

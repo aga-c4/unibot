@@ -18,7 +18,7 @@ class BotApp:
     _data = {}
 
     @staticmethod
-    def help():
+    def help():   
         print("""
 #####################          
 ## bot
