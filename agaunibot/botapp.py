@@ -5,6 +5,7 @@ from datetime import datetime
 import logging
 
 from .config import Config
+from agaunibot.lang import Lang
 from .memsess import MemSess
 from .message import Message
 from .mybot import MyBot
@@ -54,7 +55,13 @@ Examples:
         self.config = Config(custom=custom, 
                   defconfig=defconfig, 
                   allow_configs=["main", "botstru", "devices"]) 
-        config = self.config.get_config("main")     
+        config = self.config.get_config("main") 
+        available_langs = config["system"].get("available_langs", False)
+        if type(available_langs) is list:
+            Lang.set_available_langs(available_langs)
+        default_lang = config["system"].get("default_lang", False)    
+        if type(default_lang) is str and default_lang in Lang.available_langs:
+            Lang.change_lang(default_lang)
         self.bot = MyBot(self.config)
         self.message = Message(config["telegram"])
         if self.message.get_status():
