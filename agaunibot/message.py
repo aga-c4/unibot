@@ -151,7 +151,8 @@ class Message():
                 self.clean_markup()
                 return 1
         except:
-            logging.warning(f"channel=[{channel}]: message_id={message_id}: Messages edit error: {new_text}")
+            err_text = "" # TODO - вставить сюда сообщение об ошибке
+            logging.warning(f"channel=[{channel}]: message_id={message_id}: Messages edit error: {err_text}")
             return 0    
         
 
