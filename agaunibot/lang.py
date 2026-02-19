@@ -16,13 +16,21 @@ import gettext
 class Lang:
 
     available_langs = []
+    lang_obj = {}
 
     @staticmethod
     def set_available_langs(available_langs:list):
         Lang.available_langs = available_langs
 
     @staticmethod
-    def change_lang(lang:str):
+    def install_lang(lang:str):
+        if not lang in Lang.lang_obj:
+            Lang.lang_obj[lang] = gettext.translation('messages', 'locale', languages=[lang])
+            Lang.lang_obj[lang].install()
+
+    @staticmethod
+    def get_lang_funct(lang:str):
         if lang in Lang.available_langs:
-            lang_ru = gettext.translation('messages', 'locale', languages=[lang])
-            lang_ru.install()
+            Lang.install_lang(lang)
+            return Lang.lang_obj[lang].gettext
+    

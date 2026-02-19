@@ -44,13 +44,13 @@ class BotController:
         if request.is_script_command and command=="registration": 
             message.edit_message_text(request.message.from_user.id, 
                                         message_id=request.message.message.message_id, 
-                                        new_text="Сообщите администратору идентификатор, который вы увидите",
+                                        new_text=_("Сообщите администратору идентификатор, который вы увидите"),
                                         reply_markup=None) 
-            message.send(request.chatid, text="Ваш идентификатор: " + str(request.user.id))                
-        else:   
+            message.send(request.chatid, text=_("Ваш идентификатор: ") + str(request.user.id))                
+        else:    
             logging.info("command: "+request.route_str+":registration")  
-            message.add_markup([{"text":"Зарегистрироваться", "command":request.route_str+":registration"}])   
-            message.send(request.chatid, text="Авторизуйтесь или зарегистрируйтесь для начала работы с системой") 
+            message.add_markup([{"text":_("Зарегистрироваться"), "command":request.route_str+":registration"}])   
+            message.send(request.chatid, text=_("Авторизуйтесь или зарегистрируйтесь для начала работы с системой")) 
 
     def authorization(self, request:Request):
         logging.info(str(request.user.id)+": BotController:authorization")  
@@ -63,17 +63,18 @@ class BotController:
             command, command_obj, command_info = request.bot.get_dev_comm_by_str(request.message.data)
 
         if request.is_script_command and command=="authorization": 
-            message.edit_message_text(request.message.from_user.id, 
-                                        message_id=request.message.message.message_id, 
-                                        new_text="Введите код, полученный на почту",
-                                        reply_markup=None) 
-            message.send(request.chatid, text="Ваш идентификатор: " + str(request.user.id))                
+            message.send(request.chatid, text=_("Пароль не найден!") + str(request.user.id))                
         else:   
-            message.add_markup([{"text":"Авторизоваться", "command":request.route_str+":authorization"}])   
-            message.send(request.chatid, text="Авторизуйтесь для начала работы с системой")         
+            # Смотрим админа в конфиге и пользователей в файле, если не находим, то предлагаем ввести пароль  
+            request.user.get_user_info()
+            if request.user.exist:
+                request.session.up()
+                request.session.set("user_auth", True)
+            else:    
+                message.send(request.chatid, text=_("Введите пароль:"))         
 
     def help(self, request:Request):
         logging.info(str(request.user.id)+": BotController:help")  
         message = Message(request.bot.config["telegram"])    
-        mess_txt = "Это демо пример работы фреймворка, на базе которого можно создать телеграм бота."
+        mess_txt = _("Это демо пример работы фреймворка, на базе которого можно создать телеграм бота.")
         message.send(request.chatid, text=mess_txt)         

@@ -56,12 +56,12 @@ Examples:
                   defconfig=defconfig, 
                   allow_configs=["main", "botstru", "devices"]) 
         config = self.config.get_config("main") 
-        available_langs = config["system"].get("available_langs", False)
-        if type(available_langs) is list:
-            Lang.set_available_langs(available_langs)
-        default_lang = config["system"].get("default_lang", False)    
-        if type(default_lang) is str and default_lang in Lang.available_langs:
-            Lang.change_lang(default_lang)
+        self.available_langs = config["system"].get("available_langs", "ru")
+        if type(self.available_langs) is list:
+            Lang.set_available_langs(self.available_langs)
+        self.default_lang = config["system"].get("default_lang", "ru")    
+        if type(self.default_lang) is str and self.default_lang in Lang.available_langs:
+            Lang.install_lang(self.default_lang)
         self.bot = MyBot(self.config)
         self.message = Message(config["telegram"])
         if self.message.get_status():
@@ -77,23 +77,24 @@ Examples:
 
     def use_route(self, in_message, message_type:str="text"):
         config = self.config.get_config("main")     
-
         # Идентентификация пользователя
         user = User(self.config, in_message.from_user.id)
         sess = MemSess(user)
+        lang = sess.get("lang", self.default_lang)
+        _ = Lang.get_lang_funct(lang)
         pgnom = 0
         same_route = False
         # Маршрутизация
         if message_type=="start":
-            if user.found_user: 
+            if user.auth: 
                 route = self.bot.def_route
-                sess.clear_session()
+                sess.clear()
                 sess.set({"route": route})
                 sess.set({"pgnom": pgnom})
             else:    
                 route = self.bot.def_route_noauth
         else:
-            if user.found_user:    
+            if user.auth:    
                 route = sess.get("route", self.bot.def_route)
                 pgnom = sess.get("pgnom", 0)
             else:    
@@ -107,9 +108,9 @@ Examples:
             else:
                 prev_route = str(route)  
                 if message_type=="callback":
-                    route = self.bot.get_route_by_str(user, in_message.data)
+                    route = self.bot.get_route_by_str(user=user, route_str=in_message.data, lang=lang)
                 elif message_type=="text":    
-                    route = self.bot.get_route_by_variant(user, route, in_message.text)
+                    route = self.bot.get_route_by_variant(user=user, route=route, variant=in_message.text, lang=lang)
                 sess.set({"route": route})
                 if str(route)!=prev_route:
                     pgnom = 0
@@ -127,7 +128,8 @@ Examples:
         request = Request(
             bot = self.bot,
             user = user, 
-            session = sess, 
+            session = sess,
+            lang = lang, 
             route = route,
             same_route = same_route,
             pgnom = pgnom,
@@ -136,7 +138,7 @@ Examples:
             is_script_command = is_script_command
             )              
 
-        logging.info(f"{user.id}: route: {str(route)}  pgnom: {pgnom+1} same_route: {same_route}")
+        logging.info(f"{user.id}: route={str(route)}; pgnom={pgnom+1}; same_route={same_route}; lang={lang}")
 
         # Открытие ноды
         node = Node(request)

@@ -35,6 +35,12 @@ msgstr "Enter the code you received by email"
 msgid "Авторизоваться"
 msgstr "Login"
 
+msgid "Введите пароль:"
+msgstr "Print password:"
+
+msgid "Пароль не найден!"
+msgstr "Wrong password!"
+
 msgid "Авторизуйтесь для начала работы с системой"
 msgstr "Login to start working with the system"
 

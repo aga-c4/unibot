@@ -9,7 +9,8 @@ class User:
 
     config_obj = None
     users_file_path = ""
-    found_user = False
+    exist = False
+    auth = False
     is_root = False
     _data = {
             "id": "0",
@@ -21,24 +22,42 @@ class User:
         self.config_obj = config_obj
         user_id_str = str(user_id)
         custom = self.config_obj.custom.lower()
+        self.users_file_path = f"app/configs/{custom}/users.json"
         self._data["id"] = user_id_str
+
+    def set_auth(self, status:bool):    
+        self.auth = status
+
+    def set_lang(self, lang:str):    
+        self._data["lang"] = lang    
+
+    def get_user_info(self):
+        user_id_str = self._data["id"]
         if user_id_str in self.config_obj.get_config()["system"]["telegram_admin_ids"]:
             self.is_root = True
-            self.found_user = True
-        self.users_file_path = f"app/configs/{custom}/users.json"
+            self.exist = True
         users_reestr = self.get_users()          
         if user_id_str in users_reestr:
-            self.found_user = True   
+            self.exist = True   
             self._data["params"] = users_reestr[user_id_str].get("params", {})
-            self._data["roles"] = users_reestr[user_id_str].get("roles", [])    
+            self._data["roles"] = users_reestr[user_id_str].get("roles", []) 
+            self._data["lang"] = users_reestr[user_id_str].get("lang", "") 
     
     @property
     def id(self):
-        return self._data["id"]
+        return self._data.get("id", 0)   
     
     @property
     def roles(self):
-        return self._data["roles"]
+        return self._data.get("roles", [])   
+    
+    @property
+    def lang(self):
+        return self._data.get("lang", "") 
+
+    @property
+    def data(self):
+        return self._data 
     
     def no_roles(self):
         if len(self._data["roles"])==0:
@@ -66,7 +85,7 @@ class User:
             roles_in = roles        
         else:    
             roles_in = [roles]        
-        if not self.found_user:
+        if not self.exist:
             return False
         if self.is_root:
             return False
@@ -88,7 +107,7 @@ class User:
             roles_in = roles        
         else:    
             roles_in = [roles]        
-        if not self.found_user:
+        if not self.exist:
             return False
         if self.is_root:
             return False
@@ -196,11 +215,4 @@ class User:
 
     def get(self, key:str, defval=None):
         return self._data["params"].get(key, defval)    
-
-    @property
-    def id(self):
-        return self._data.get("id", 0)   
-
-    @property
-    def data(self):
-        return self._data 
+    

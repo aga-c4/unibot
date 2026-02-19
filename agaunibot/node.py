@@ -18,7 +18,7 @@ class Node:
             if def_route!="":
                 route = def_route
             else:  
-                if request.user.found_user:  
+                if request.session.auth_user:  
                     route = request.bot.def_route   
                 else:
                     route = request.bot.def_route_noauth   

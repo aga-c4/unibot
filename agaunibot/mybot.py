@@ -86,9 +86,9 @@ class MyBot:
                 result = all_route_list[1:]    
         return result
       
-    def get_route_by_str(self, user:User, route_str:str=None): 
-        if user.found_user:
-            def_route = self.def_route    
+    def get_route_by_str(self, *, user:User, route_str:str=None, lang:str=""): 
+        if user.auth:
+            def_route = self.def_route + "_" + lang   
         else:
             def_route = self.def_route_noauth
         cur_route = []
@@ -121,10 +121,10 @@ class MyBot:
             return def_route                 
         return cur_route
 
-    def get_route_by_variant(self, user:User, route=None, variant:str=""):
+    def get_route_by_variant(self, *, user:User, route=None, variant:str="", lang:str=""):
         cur_route = route[:]
-        if user.found_user:
-            def_route = self.def_route    
+        if user.auth:
+            def_route = self.def_route + "_" + lang    
         else:
             def_route = self.def_route_noauth
         if route is None:
@@ -138,7 +138,7 @@ class MyBot:
                 prev_route = route[:]
                 del prev_route[-1]
             cur_route = prev_route  
-        elif user.found_user and variant==self.dop_variant:
+        elif user.auth and variant==self.dop_variant:
             cur_route = self.dop_variant_route    
         elif variant==self.dop_variant_noauth:
             cur_route = self.dop_variant_route_noauth        
