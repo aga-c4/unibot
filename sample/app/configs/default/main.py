@@ -58,7 +58,9 @@ class main:
             # Наименование 3й кнопки общей навигации бота (пустая строка - не выводится)
             "nav_dop_variant_noauth": "Помощь",
             # Маршрут 3й кнопки общей навигации бота для неавторизованного пользователя
-            "nav_dop_variant_route_noauth": ["def_node_noauth","help"]
+            "nav_dop_variant_route_noauth": ["def_node_noauth","help"],
+            # Контроллер анализатора текстов бота, если не задан, то не вызывается
+            "analyse_text_controller": "TextAnalyseController"
         },
         # Параметры для публикации сообщений в канал рассылки в Телеграм
         "telegram": {
