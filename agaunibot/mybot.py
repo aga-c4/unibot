@@ -108,30 +108,7 @@ class MyBot:
                 rt_item = self.def_node + lang_sf
             result.append(rt_item)
         return result     
-      
-    def analyse_text(self, *, user:User, route:list=None, text_to_analyse:str="", lang:str=""): 
-        if text_to_analyse!="тест":
-            return None
-
-        # cur_route = route[:]
-        if user.auth:
-            def_route = self.def_route
-        else:
-            def_route = self.def_route_noauth
-
-        # if route is None:
-        cur_route = def_route
-        outtext = "А вот тут бот нафантазировал" 
-
-        return {
-            "route": cur_route,
-            "same_route": False,
-            "pgnom": 0,
-            "command": "",
-            "command_obj": "",
-            "command_info": "",
-            "text": outtext,
-        }
+    
 
     def get_route_by_str(self, *, user:User, route_str:str="", lang:str=""): 
         '''Вернет маршут с примененным языком'''

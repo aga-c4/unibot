@@ -137,7 +137,16 @@ Examples:
         # Анализа введенного текста, если будет найдено соответствие, то будет выведен текст
         # и/или пользователь будет перекинут на заданный маршрут
         if text_to_analyse!="":
-            route_data = self.bot.analyse_text(user=user, route = route, text_to_analyse=text_to_analyse, lang=lang)
+            analyse_text_controller = config["bot"].get("analyse_text_controller", None)
+            if not analyse_text_controller is None:
+                analyse_text_model = SysBf.class_factory(config["bot"]["bot_controllers_prefix"]+analyse_text_controller.lower(), analyse_text_controller)
+                logging.info("{0}: run {1}.{2}".format(user.id,analyse_text_controller,"analyse_text"))
+                route_data = SysBf.call_method_fr_obj(analyse_text_model, "analyse_text", {
+                            "user":user, 
+                            "bot": self.bot,
+                            "route":route, 
+                            "text_to_analyse":text_to_analyse, 
+                            "lang":lang}) 
             if not route_data is None:
                 logging.info(f"{user.id}: analyse_text success result!")
                 message_type = "text"
