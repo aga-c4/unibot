@@ -144,6 +144,9 @@ Examples:
                 route_data = SysBf.call_method_fr_obj(analyse_text_model, "analyse_text", {
                             "user":user, 
                             "bot": self.bot,
+                            "session": sess,
+                            "message": in_message,
+                            "chatid": chatid,
                             "route":route, 
                             "text_to_analyse":text_to_analyse, 
                             "lang":lang}) 
