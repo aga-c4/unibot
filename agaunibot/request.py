@@ -4,6 +4,7 @@ class Request:
             "bot": None,
             "session": None,
             "route": [],
+            "route_data": None,
             "pgnom": 0,
             "user": None,
             "message": None,
@@ -40,6 +41,10 @@ class Request:
     @property
     def route(self):
         return self._data.get("route", None) 
+    
+    @property
+    def route_data(self):
+        return self._data.get("route_data", None) 
     
     @property
     def route_str(self):

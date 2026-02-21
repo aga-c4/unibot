@@ -13,12 +13,11 @@ class DemoController:
         mess_txt = demo_obj.get_info()
         message.send(request.chatid, text=mess_txt) 
 
-    def send_to_canal(self, request:Request):
-        logging.info("+")  
+    def send_to_channel(self, request:Request):  
         chatid = request.bot.config["telegram"]["channels"]["domchat"]
-        logging.info(str(request.user.id)+": DemoController:send_to_canal:"+str(chatid))  
+        logging.info(str(request.user.id)+": DemoController:send_to_channel:"+str(chatid))  
         message = Message(request.bot.config["telegram"])    
-        mess_txt = "Demo message to canal."
+        mess_txt = "Demo message to channel."
         message.send(chatid, text=mess_txt)     
     
     

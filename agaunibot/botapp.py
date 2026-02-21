@@ -75,7 +75,7 @@ Examples:
     def get(self, key:str, defval=None):
         return self._data.get(key, defval)
 
-    def use_route(self, in_message, message_type:str="text"):
+    def use_route(self, in_message, message_type:str="text", route_data:dict=None):
         config = self.config.get_config("main")     
         # Идентентификация пользователя
         user = User(self.config, in_message.from_user.id)
@@ -84,21 +84,27 @@ Examples:
         _ = Lang.get_lang_funct(lang)
         pgnom = 0
         same_route = False
+        def_route = self.bot.set_lang_to_route(route=self.bot.def_route, lang=lang)
+        def_route_noauth = self.bot.set_lang_to_route(route=self.bot.def_route_noauth, lang=lang)
+
         # Маршрутизация
-        if message_type=="start":
+        if not route_data is None and type(route_data) is dict:
+            route_str = ".".join(route_data.get("route", []))
+            route = self.bot.get_route_by_str(user=user, route_str=route_str, lang=lang)
+            same_route = route_data.get("same_route", False)
+            pgnom = route_data.get("pgnom", 0)
+            message_type = route_data.get("message_type", "text")
+        elif message_type=="start":
             if user.auth: 
-                route = self.bot.def_route
+                route = def_route
                 sess.clear()
-                sess.set({"route": route})
-                sess.set({"pgnom": pgnom})
             else:    
-                route = self.bot.def_route_noauth
+                route = def_route_noauth  
         else:
             if user.auth:    
-                route = sess.get("route", self.bot.def_route)
-                pgnom = sess.get("pgnom", 0)
+                route = self.bot.set_lang_to_route(route=sess.get("route", def_route), lang=lang)   
             else:    
-                route = self.bot.def_route_noauth
+                route = def_route_noauth
             btn_pg_prefix  = config["bot"]["btn_pg_prefix"]
             btn_pg_prefix_len = len(btn_pg_prefix)
             if message_type=="text" and in_message.text.startswith(btn_pg_prefix) and in_message.text[btn_pg_prefix_len:].isdigit():
@@ -108,22 +114,20 @@ Examples:
             else:
                 prev_route = str(route)  
                 if message_type=="callback":
-                    route = self.bot.get_route_by_str(user=user, route_str=in_message.data, lang=lang)
-                elif message_type=="text":    
-                    route = self.bot.get_route_by_variant(user=user, route=route, variant=in_message.text, lang=lang)
-                sess.set({"route": route})
+                    route = self.bot.get_route_by_str(user=user, route_str=in_message.data, lang=lang)  
+                elif message_type=="text":     
+                    route = self.bot.get_route_by_variant(user=user, route=route, variant=in_message.text, lang=lang)    
                 if str(route)!=prev_route:
                     pgnom = 0
-                elif str(route) != str(self.bot.def_route) and str(route) != str(self.bot.def_route_noauth):
-                    same_route = True    
-                sess.set({"pgnom": pgnom})    
+                elif str(route) != str(def_route) and str(route) != str(def_route_noauth):
+                    same_route = True       
 
         if message_type=="callback" or message_type=="document":
             chatid = in_message.from_user.id
             is_script_command = True
         else:
             chatid = in_message.chat.id
-            is_script_command = False    
+            is_script_command = False        
 
         request = Request(
             bot = self.bot,
@@ -134,14 +138,46 @@ Examples:
             same_route = same_route,
             pgnom = pgnom,
             message = in_message,
+            route_data = route_data,
             chatid = chatid,
             is_script_command = is_script_command
-            )              
+            )   
 
         logging.info(f"{user.id}: route={str(route)}; pgnom={pgnom+1}; same_route={same_route}; lang={lang}")
+        logging.info(f"{user.id}: auth={user.auth}; roles={user.roles}")
 
         # Открытие ноды
         node = Node(request)
+        if user.auth and not node.get("fast_back", False):
+            sess.set({"route": route})
+            sess.set({"pgnom": pgnom})    
+
+        if_auth_redirect = node.get("if_auth_redirect", None)
+        if user.auth and type(if_auth_redirect) is list:
+            route = self.bot.set_lang_to_route(route=if_auth_redirect, lang=lang)
+            same_route = False
+            pgnom = 0
+            message_type = "text"
+            route_data = None
+            is_script_command = False   
+            request = Request(
+                bot = self.bot,
+                user = user, 
+                session = sess,
+                lang = lang, 
+                route = route,
+                same_route = same_route,
+                pgnom = pgnom,
+                message = in_message,
+                route_data = route_data,
+                chatid = chatid,
+                is_script_command = is_script_command
+                )  
+            node = Node(request)  
+            if not node.get("fast_back", False):
+                sess.set({"route": route})
+                sess.set({"pgnom": pgnom}) 
+
         # Вывод кнопок основной навигации и сообщения роута
         if message_type=="callback":
             spl = in_message.data.split(':')
@@ -149,7 +185,7 @@ Examples:
                 variants = node.get_variants(request)
                 request.set(node_variants=variants)
                 self.message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")  
-                if route!=self.bot.def_route:
+                if str(route)!=str(def_route) and not node.get("fast_back", False):
                     markup_variants = [self.bot.main_variant, variants["back_variant"]]
                     if variants["forvard_variant"]:
                         markup_variants.append(variants["forvard_variant"])
@@ -161,7 +197,7 @@ Examples:
             variants = node.get_variants(request)
             request.set(node_variants=variants)
             self.message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")  
-            if route!=self.bot.def_route and route!=self.bot.def_route_noauth:
+            if route!=str(def_route) and str(route)!=str(def_route_noauth) and not node.get("fast_back", False):
                 markup_variants = [self.bot.main_variant, variants["back_variant"]]
                 if variants["forvard_variant"]:
                     markup_variants.append(variants["forvard_variant"])
@@ -173,7 +209,26 @@ Examples:
         if node.get("contoller", False) and node.get("contoller_action", False):
             node_model = SysBf.class_factory(config["bot"]["bot_controllers_prefix"]+node.get("contoller").lower(), node.get("contoller"))
             logging.info("{0}: run {1}.{2}".format(user.id,node.get("contoller"),node.get("contoller_action")))
-            SysBf.call_method_fr_obj(node_model, node.get("contoller_action"), request) 
+            res = SysBf.call_method_fr_obj(node_model, node.get("contoller_action"), request) 
+            # По результату работы контроллера возможен редирект
+            if type(res) is dict and "redirect" in res and type(res["redirect"]) is dict: 
+                message_type = res["redirect"].get("message_type", "text")
+                if user.auth:    
+                    route = sess.get("route", self.bot.def_route)
+                    pgnom = sess.get("pgnom", 0)
+                else:    
+                    route = self.bot.def_route_noauth
+                    pgnom = 0
+                route_data = {
+                    "route": res["redirect"].get("route", route),
+                    "same_route": res["redirect"].get("same_route", False),
+                    "pgnom": res["redirect"].get("pgnom", 0),
+                    "command": res["redirect"].get("command", ""),
+                    "command_obj": res["redirect"].get("command_obj", ""),
+                    "command_info": res["redirect"].get("command_info", ""),
+                    "text": res["redirect"].get("text", ""),
+                }
+                self.use_route(in_message=in_message, message_type=message_type, route_data=route_data)
 
 
     @staticmethod
@@ -261,36 +316,36 @@ Examples:
                 def start(in_message):
                     try:
                         self.use_route(in_message=in_message, message_type="start")
-                    except:
-                        logging.warning("Error in message_handler:commands:start")     
+                    except Exception:
+                        logging.exception("Exeption in message_handler:commands:start:")     
                         
                 @tgbot.message_handler(content_types=['text'])
                 def func(in_message):
                     try:
                         self.use_route(in_message=in_message, message_type="text")
-                    except:
-                        logging.warning("Error in message_handler:content_types:text")             
+                    except Exception:
+                        logging.exception("Error in message_handler:content_types:text")             
 
                 @tgbot.callback_query_handler()
                 def callback_query(in_message):
                     try:
                         self.use_route(in_message=in_message, message_type="callback")
-                    except:
-                        logging.warning("Error in callback_query_handler")    
+                    except Exception:
+                        logging.exception("Error in callback_query_handler")    
 
                 @tgbot.message_handler(content_types=['document'])
                 def handle_docs_photo(in_message):
                     try:
                         self.use_route(in_message=in_message, message_type="document")
-                    except:
-                        logging.warning("Error in message_handler:content_types:document")            
+                    except Exception:
+                        logging.exception("Error in message_handler:content_types:document")            
 
                 while True:
                     try:
                         logging.info("Try to connect by Telebot")    
                         tgbot.polling(none_stop=True)
-                    except:
-                        logging.warning("Error in Telebot, reconnect in 60s")    
+                    except Exception:
+                        logging.exception("Error in Telebot, reconnect in 60s")    
                         time.sleep(60)    
         else:
             BotApp.help()

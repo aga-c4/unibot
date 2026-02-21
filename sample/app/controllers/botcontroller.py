@@ -4,12 +4,12 @@ from agaunibot.request import Request
 from agaunibot.message import Message
 
 class BotController:
-    
+
     def get_map(self, request:Request):
         logging.info(str(request.user.id)+": BotController:bot_map")    
         message = Message(request.bot.config["telegram"])   
         def_route = request.bot.def_route
-        node = request.bot.get_node_by_route(def_route)   
+        node = request.bot.get_node_by_route(lang=request.lang, def_route=def_route)   
         for vi1,item1 in node["variants"].items():
             if vi1!="map":
                 route = request.bot.def_route[:]
@@ -33,15 +33,10 @@ class BotController:
 
     def registration(self, request:Request):
         logging.info(str(request.user.id)+": BotController:registration")  
-        message = Message(request.bot.config["telegram"])   
-        
-        command = ""
-        command_obj = ""
-        command_info = ""
-        if hasattr(request.message, "data"):
-            command, command_obj, command_info = request.bot.get_dev_comm_by_str(request.message.data)
+        message = Message(request.bot.config["telegram"])     
+        mess_data = request.bot.get_data_from_message(request.message)
 
-        if request.is_script_command and command=="registration": 
+        if request.is_script_command and mess_data["command"]=="registration": 
             message.edit_message_text(request.message.from_user.id, 
                                         message_id=request.message.message.message_id, 
                                         new_text=_("Сообщите администратору идентификатор, который вы увидите"),
@@ -55,26 +50,60 @@ class BotController:
     def authorization(self, request:Request):
         logging.info(str(request.user.id)+": BotController:authorization")  
         message = Message(request.bot.config["telegram"])   
-        
-        command = ""
-        command_obj = ""
-        command_info = ""
-        if hasattr(request.message, "data"):
-            command, command_obj, command_info = request.bot.get_dev_comm_by_str(request.message.data)
-
-        if request.is_script_command and command=="authorization": 
-            message.send(request.chatid, text=_("Пароль не найден!") + str(request.user.id))                
-        else:   
-            # Смотрим админа в конфиге и пользователей в файле, если не находим, то предлагаем ввести пароль  
-            request.user.get_user_info()
-            if request.user.exist:
+        mess_data = request.bot.get_data_from_message(request.message, request.route_data)
+        if mess_data["text"]!=_("Авторизация") and mess_data["text"]!="":
+            if mess_data["text"]=="password":
+                udata = {
+                    "id": request.user.id,
+                    "params": {},
+                    "roles": ["user"],
+                    "lang": "",
+                    "exist": False,
+                    "is_root": False
+                }
                 request.session.up()
-                request.session.set("user_auth", True)
+                request.user.set_data(udata)
+                request.session.set({"user_data": udata})
+                request.session.set({"user_auth": True})
+                request.user.set_data(udata)
+                logging.info(str(request.user.id) + f": redirect to []")  
+                return {"redirect": {"route":[]}}
+            else:     
+                message.send(request.chatid, text=_("Пароль не найден!") + str(request.user.id))                
+        else: 
+            # Смотрим админа в конфиге и пользователей в файле, если не находим, то предлагаем ввести пароль 
+            udata = request.user.get_user_info() 
+            if udata.get("exist", False):
+                request.session.up()
+                request.user.set_data(udata)
+                request.session.set({"user_data": udata})
+                request.session.set({"user_auth": True})
+                logging.info(str(request.user.id) + f": redirect to []")  
+                return {"redirect": {"route":[]}}
             else:    
-                message.send(request.chatid, text=_("Введите пароль:"))         
+                message.send(request.chatid, text=_("Введите пароль:"))             
 
     def help(self, request:Request):
         logging.info(str(request.user.id)+": BotController:help")  
         message = Message(request.bot.config["telegram"])    
-        mess_txt = _("Это демо пример работы фреймворка, на базе которого можно создать телеграм бота.")
+        mess_txt = _("AUTH: Это демо пример работы фреймворка, на базе которого можно создать телеграм бота.")
         message.send(request.chatid, text=mess_txt)         
+
+    def logout(self, request:Request):
+        logging.info(str(request.user.id)+": BotController:logout")  
+        message = Message(request.bot.config["telegram"])    
+        mess_txt = _("Вы вышли из системы")
+        message.send(request.chatid, text=mess_txt)  
+        udata = {
+            "id": request.user.id,
+            "params": {},
+            "roles": [],
+            "lang": "",
+            "exist": False,
+            "is_root": False
+        }
+        request.session.up()
+        request.user.set_data(udata)
+        request.session.delete()
+        logging.info(str(request.user.id) + f": logout")  
+        return {"redirect": {"route":[]}}       

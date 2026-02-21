@@ -5,7 +5,7 @@ from .user import User
 
 class MemSess:
 
-    session_timeout = 3600
+    timeout = 3600
     sessions = {}
     cleanup_iter_rand = 100
 
@@ -20,7 +20,9 @@ class MemSess:
         self.user_id_str = str(user.id)
         if self.user_id_str in MemSess.sessions:
             self.up()
-            user.set_auth(self.get("user_auth"), False) 
+            user.set_data(self.get("user_data"))
+            user.set_auth(self.get("user_auth", False)) 
+            
 
     @staticmethod
     def set_timeout(timeout:int=3600):
@@ -28,25 +30,22 @@ class MemSess:
 
 
     def up(self):
-        current_time = time.time()
-        if self.user_id_str in MemSess.sessions and current_time - MemSess.sessions[self.user_id_str]["ts"] > self.session_timeout:
+        current_time = int(time.time())
+        if self.user_id_str in MemSess.sessions and current_time - MemSess.sessions[self.user_id_str]["ts"] > self.timeout:
             self.delete()
-            return
-        elif not self.user_id_str in MemSess.sessions:
+
+        if not self.user_id_str in MemSess.sessions:
             MemSess.sessions[self.user_id_str] = {
                 "start_ts": current_time,
                 self.type: {}
             }
         elif not self.type in MemSess.sessions[self.user_id_str]:
-            MemSess.sessions[self.user_id_str][self.type] = {}                           
+            MemSess.sessions[self.user_id_str][self.type] = {}                          
         MemSess.sessions[self.user_id_str]["ts"] = current_time
-        MemSess.sessions[self.user_id_str]["fin_ts"] = current_time + MemSess.timeout
-            
+        MemSess.sessions[self.user_id_str]["fin_ts"] = current_time + MemSess.timeout    
 
     def set(self, sess_vals:dict={}):
         if self.user_id_str in MemSess.sessions:
-            if not self.type in MemSess.sessions[self.user_id_str]:
-                MemSess.sessions[self.user_id_str][self.type] = {} 
             # TODO - 2 уровень перезаписывает, не дополняет!
             MemSess.sessions[self.user_id_str][self.type] = {**MemSess.sessions[self.user_id_str][self.type], **sess_vals} 
             if random.randint(1, self.cleanup_iter_rand)==1:
@@ -70,7 +69,7 @@ class MemSess:
             del MemSess.sessions[self.user_id_str]        
 
     def cleanup(self):
-        current_time = time.time()
+        current_time = int(time.time())
         for user_id, user_session in MemSess.sessions.items():
             if current_time > user_session["fin_ts"] and user_id!=self.user_id_str:
                 del MemSess.sessions[user_id]

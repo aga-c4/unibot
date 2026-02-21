@@ -9,13 +9,14 @@ class User:
 
     config_obj = None
     users_file_path = ""
-    exist = False
     auth = False
-    is_root = False
     _data = {
             "id": "0",
             "params": {},
-            "roles": []
+            "roles": [],
+            "lang": "",
+            "exist": False,
+            "is_root": False
             }
     
     def __init__(self, config_obj:Config, user_id:int=0):
@@ -33,16 +34,35 @@ class User:
 
     def get_user_info(self):
         user_id_str = self._data["id"]
-        if user_id_str in self.config_obj.get_config()["system"]["telegram_admin_ids"]:
-            self.is_root = True
-            self.exist = True
+        udata = {
+            "id": user_id_str,
+            "params": {},
+            "roles": [],
+            "lang": "",
+            "exist": False,
+            "is_root": False
+            }
+        if user_id_str in self.config_obj.get_config()["system"].get("telegram_admin_ids", []):
+            udata["roles"].append("root")
+            udata["exist"] = True
+            udata["is_root"] = True  
         users_reestr = self.get_users()          
         if user_id_str in users_reestr:
-            self.exist = True   
-            self._data["params"] = users_reestr[user_id_str].get("params", {})
-            self._data["roles"] = users_reestr[user_id_str].get("roles", []) 
-            self._data["lang"] = users_reestr[user_id_str].get("lang", "") 
+            udata["exist"] = True
+            udata["params"] = users_reestr[user_id_str].get("params", {})
+            udata["roles"] = users_reestr[user_id_str].get("roles", []) 
+            udata["lang"] = users_reestr[user_id_str].get("lang", "") 
+            udata["is_root"] = users_reestr[user_id_str].get("is_root", False) 
+        return udata    
     
+    def set_data(self, newdata:dict):
+        # self._data["id"] = newdata.get("id", 0)      
+        self._data["params"] = newdata.get("params", {})
+        self._data["roles"] = newdata.get("roles", []) 
+        self._data["lang"] = newdata.get("lang", "") 
+        self._data["exist"] = newdata.get("exist", False) 
+        self._data["is_root"] = newdata.get("is_root", False) 
+
     @property
     def id(self):
         return self._data.get("id", 0)   
@@ -54,6 +74,14 @@ class User:
     @property
     def lang(self):
         return self._data.get("lang", "") 
+    
+    @property
+    def is_root(self):
+        return self._data.get("is_root", False) 
+    
+    @property
+    def exist(self):
+        return self._data.get("exist", False) 
 
     @property
     def data(self):
@@ -211,8 +239,13 @@ class User:
 
     def set(self, **kwargs):
         if type(kwargs)==dict:
-            self._data["params"] = {**self._data["params"], **kwargs} 
+            self._data["params"] = {**self._data["params"], **kwargs}         
 
     def get(self, key:str, defval=None):
-        return self._data["params"].get(key, defval)    
+        return self._data["params"].get(key, defval)  
+
+    def set_roles(self, **kwargs):
+        if type(kwargs)==dict:
+            self._data["roles"] = {**self._data["roles"], **kwargs} 
+
     

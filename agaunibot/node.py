@@ -8,27 +8,24 @@ class Node:
     _data = {}
 
 
-    def __init__(self, request:Request):
+    def __init__(self, request:Request, def_route:list=None):
         self.route = request.route
-        self._data = self.get_node_by_route(request)
+        self._data = self.get_node_by_route(request, def_route=def_route)
 
-    def get_node_by_route(self, request:Request, def_route:str=""):
+    def get_node_by_route(self, request:Request, def_route:list=None):
         route = request.route
         if request.route is None or not type(request.route) is list:
-            if def_route!="":
+            if type(def_route) is list:
                 route = def_route
             else:  
-                if request.session.auth_user:  
-                    route = request.bot.def_route   
-                else:
-                    route = request.bot.def_route_noauth   
+                route = []   
         node = request.bot.bot_stru
         node_exist = False
         for key in route:   
             view_roles = node["variants"][key].get("access", {}).get("view", None)
-            if "variants" in node and key in node["variants"] and \
-                (not type(view_roles) is dict
-                 or request.user.has_role(node["variants"][key].get("access", {}).get("view", "noroles"))):
+            if "variants" in node and key in node["variants"] \
+                and (not type(view_roles) is dict \
+                     or request.user.has_role(node["variants"][key].get("access", {}).get("view", "noroles"))):
                 node = node["variants"][key]    
                 node_exist = True   
         if not node_exist:
@@ -47,7 +44,8 @@ class Node:
             btn_pg_prefix  = request.bot.config["bot"]["btn_pg_prefix"]
             for rt, variant in self._data["variants"].items():
                 variant_role = variant.get("access", {}).get("view", "noroles")
-                if request.user.has_role(variant.get("access", {}).get("view", "noroles")):
+                if request.user.has_role(variant.get("access", {}).get("view", "noroles")) \
+                    and not variant.get("menu_hide", False):
                     if items>=request.pgnom*btn_in_pg and items<request.pgnom_next*btn_in_pg:
                         variant_list.append(variant["action"])
                     if not forvard_found and items>=request.pgnom_next*btn_in_pg:    

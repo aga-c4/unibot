@@ -12,8 +12,8 @@ class DemoModel:
     }
     model = None
     access = {}
-    out_path = "app/tmp/out"
-    in_path = "app/tmp/in"
+    out_path = "tmp/out"
+    in_path = "tmp/in"
     commands = {}
 
     def __init__(self, bot:MyBot):
