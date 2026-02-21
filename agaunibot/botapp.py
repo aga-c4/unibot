@@ -86,6 +86,7 @@ Examples:
         same_route = False
         def_route = self.bot.set_lang_to_route(route=self.bot.def_route, lang=lang)
         def_route_noauth = self.bot.set_lang_to_route(route=self.bot.def_route_noauth, lang=lang)
+        text_to_analyse = ""
 
         # Маршрутизация
         if not route_data is None and type(route_data) is dict:
@@ -115,8 +116,12 @@ Examples:
                 prev_route = str(route)  
                 if message_type=="callback":
                     route = self.bot.get_route_by_str(user=user, route_str=in_message.data, lang=lang)  
-                elif message_type=="text":     
+                elif message_type=="text": 
+                    old_route = route[:]    
                     route = self.bot.get_route_by_variant(user=user, route=route, variant=in_message.text, lang=lang)    
+                    # Если роут не сменился, то подключим анализ текстовой строки
+                    if old_route==route:
+                        text_to_analyse = in_message.text
                 if str(route)!=prev_route:
                     pgnom = 0
                 elif str(route) != str(def_route) and str(route) != str(def_route_noauth):
@@ -127,7 +132,20 @@ Examples:
             is_script_command = True
         else:
             chatid = in_message.chat.id
-            is_script_command = False        
+            is_script_command = False      
+
+        # Анализа введенного текста, если будет найдено соответствие, то будет выведен текст
+        # и/или пользователь будет перекинут на заданный маршрут
+        if text_to_analyse!="":
+            route_data = self.bot.analyse_text(user=user, route = route, text_to_analyse=text_to_analyse, lang=lang)
+            if not route_data is None:
+                logging.info(f"{user.id}: analyse_text success result!")
+                message_type = "text"
+                route_str = ".".join(route_data.get("route", []))
+                route = self.bot.get_route_by_str(user=user, route_str=route_str, lang=lang)
+                same_route = route_data.get("same_route", False)
+                pgnom = route_data.get("pgnom", 0)
+                message_type = route_data.get("message_type", "text")
 
         request = Request(
             bot = self.bot,
@@ -197,12 +215,16 @@ Examples:
             variants = node.get_variants(request)
             request.set(node_variants=variants)
             self.message.add_markup(variants["variant_list"], "ReplyKeyboardMarkup")  
-            if route!=str(def_route) and str(route)!=str(def_route_noauth) and not node.get("fast_back", False):
+            if route!=str(def_route) and str(route)!=str(def_route_noauth) \
+                and not node.get("fast_back", False):
                 markup_variants = [self.bot.main_variant, variants["back_variant"]]
                 if variants["forvard_variant"]:
                     markup_variants.append(variants["forvard_variant"])
                 self.message.add_markup(markup_variants, "ReplyKeyboardMarkup")
-            mess_txt = node.get("message", "").format(name=in_message.from_user.first_name) 
+            if type(route_data) is dict and route_data.get("text", "")!="":
+                mess_txt = route_data.get("text", "")
+            else:    
+                mess_txt = node.get("message", "").format(name=in_message.from_user.first_name) 
             self.message.send(in_message.chat.id, text=mess_txt)
 
         # Надо вызвать функцию ноды
