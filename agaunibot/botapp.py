@@ -157,7 +157,6 @@ Examples:
                             "lang":lang}) 
             if not route_data is None:
                 logging.info(f"{user.id}: analyse_text success result!")
-                message_type = "text"
                 route_str = ".".join(route_data.get("route", []))
                 route = self.bot.get_route_by_str(user=user, route_str=route_str, lang=lang)
                 same_route = route_data.get("same_route", False)

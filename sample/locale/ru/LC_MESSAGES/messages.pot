@@ -18,6 +18,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #
+msgid "start_hint_text"
+msgstr ""
+
+#
 msgid "Сообщите администратору идентификатор, который вы увидите"
 msgstr ""
 

@@ -18,6 +18,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #
+msgid "start_hint_text"
+msgstr "Hello {name}!"
+
+#
 msgid "Сообщите администратору идентификатор, который вы увидите"
 msgstr "Сообщите администратору идентификатор, который вы увидите"
 

@@ -46,3 +46,20 @@ pip install git+https://github.com/aga-c4/agaunibot
 входящий текст и отвечать, для примера наберите "тест" в авторизованном и не авторизованном состоянии.
 
 Анализатор текстов можно подключить в конфиге в секции "bot" (analyse_text_controller), посмотрите как это сделано в демо конфиге.
+
+Для локализации используется gettext, словари находятся в папке locale. Геренация словарей делается так:
+1. Генерация .pot
+```
+sudo apt install gettext
+xgettext -d messages -o locale/ru/LC_MESSAGES/messages.pot bot.py
+```
+
+2. GenerГенерацияate .po
+```
+msginit -l es_ES.UTF8 -o locale/ru/LC_MESSAGES/messages.po -i locale/ru/LC_MESSAGES/messages.pot --no-translator
+```
+
+3. Generate .mo
+```
+msgfmt -c locale/ru/LC_MESSAGES/messages.po -o locale/ru/LC_MESSAGES/messages.mo
+```

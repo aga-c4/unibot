@@ -15,3 +15,5 @@ venv/
 /docker-compose.yml
 /dockerfile
 /locale
+/tmp
+/logs
