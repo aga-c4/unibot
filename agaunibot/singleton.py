@@ -1,3 +1,10 @@
+# Используем так:
+# from .singleton import singleton
+
+# @singleton
+# class Message():
+# ...
+
 class _SingletonWrapper:
 
     def __init__(self, cls):

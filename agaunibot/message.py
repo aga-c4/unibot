@@ -2,9 +2,7 @@ import logging
 from time import sleep
 
 from .sysbf import SysBf
-from .singleton import singleton
 
-@singleton
 class Message():
     status = True
     driver = None

@@ -3,6 +3,7 @@ import argparse
 import time
 from datetime import datetime
 import logging
+from typing import Final
 
 from .config import Config
 from agaunibot.lang import Lang
@@ -14,9 +15,45 @@ from .user import User
 from .request import Request
 from .node import Node
 
+
 class BotApp:
 
     _data = {}
+
+    def run(self, params:dict={}): 
+        self.params = params
+        BotApp.set_logsConfig(self.params) 
+        defconfig = params.get("defconfig", "default")
+        custom = params.get("custom", "default")
+        self.start_time = time.time() 
+        self.config = Config(custom=custom, 
+                  defconfig=defconfig, 
+                  allow_configs=["main", "botstru", "devices"]) 
+        config = self.config.get_config("main") 
+        self.available_langs = config["system"].get("available_langs", "ru")
+        if type(self.available_langs) is list:
+            Lang.set_available_langs(self.available_langs)
+        self.default_lang = config["system"].get("default_lang", "ru")    
+        if type(self.default_lang) is str and self.default_lang in Lang.available_langs:
+            Lang.install_lang(self.default_lang)
+        self.bot = MyBot(self.config)
+        self.message = Message(config) # Тут подгружается конфиг, дальше будет работать как синглтон TODO - избавиться от синглтона пробросом апп вместо реквеста
+        self.request = None
+
+        # TODO - Продумать уведомления
+        # if self.message.status:
+        #     self.message.send(config["telegram"]["channels"]["domchat"], text=f"Bot started!") 
+
+
+        action = self.params.get("action", "")       
+        custom = self.params.get("custom", "")    
+        print(f"Try to run bot with custom {custom}")  
+
+        if action == 'start':
+            if self.message.status:
+                self.message.bind_message_funct(self)
+        else:
+            BotApp.help()
 
     @staticmethod
     def help():   
@@ -46,27 +83,6 @@ Examples:
     bot.sh start                             
 """)
 
-    def __init__(self, params:dict={}):
-        self.params = params
-        BotApp.set_logsConfig(self.params) 
-        defconfig = params.get("defconfig", "default")
-        custom = params.get("custom", "default")
-        self.start_time = time.time() 
-        self.config = Config(custom=custom, 
-                  defconfig=defconfig, 
-                  allow_configs=["main", "botstru", "devices"]) 
-        config = self.config.get_config("main") 
-        self.available_langs = config["system"].get("available_langs", "ru")
-        if type(self.available_langs) is list:
-            Lang.set_available_langs(self.available_langs)
-        self.default_lang = config["system"].get("default_lang", "ru")    
-        if type(self.default_lang) is str and self.default_lang in Lang.available_langs:
-            Lang.install_lang(self.default_lang)
-        self.bot = MyBot(self.config)
-        self.message = Message(config) # Тут подгружается конфиг, дальше будет работать как синглтон
-        # TODO - Продумать уведомления
-        # if self.message.status:
-        #     self.message.send(config["telegram"]["channels"]["domchat"], text=f"Bot started!") 
     
     def set(self, **kwargs):
         """set(bot=bot, config=config, message=message...)"""
@@ -177,6 +193,7 @@ Examples:
             chatid = chatid,
             is_script_command = is_script_command
             )   
+        self.request = request    
 
         logging.info(f"{user.id}: route={str(route)}; pgnom={pgnom+1}; same_route={same_route}; message_type={message_type}; lang={lang}")
         logging.info(f"{user.id}: auth={user.auth}; roles={user.roles}")
@@ -211,10 +228,12 @@ Examples:
                 chatid = chatid,
                 is_script_command = is_script_command
                 )  
+            self.request = request
             node = Node(request)  
             if not node.get("fast_back", False):
                 sess.set({"route": route})
                 sess.set({"pgnom": pgnom}) 
+
 
         # Вывод кнопок основной навигации и сообщения роута
         if message_type=="callback":
@@ -350,15 +369,6 @@ Examples:
             logging.basicConfig(level=log_level_val)
             print(f"log_level: {log_level} to console")            
     
-    def run(self): 
-        action = self.params.get("action", "")       
-        custom = self.params.get("custom", "")    
-        print(f"Try to run bot with custom {custom}")  
-
-        if action == 'start':
-            if self.message.status:
-                self.message.bind_message_funct(self)
-        else:
-            BotApp.help()
 
                 
+app:Final[BotApp] = BotApp()
