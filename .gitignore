@@ -17,3 +17,7 @@ venv/
 /locale
 /tmp
 /logs
+/app/configs/user
+/app/controllers/user
+/app/models/user
+/app/resources/user
