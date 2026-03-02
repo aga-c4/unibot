@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-from agaunibot.botapp import BotApp
+from agaunibot.botapp import app, BotApp
 
-app = BotApp(BotApp.get_console_commands())
-app.run()
+app.run(BotApp.get_console_commands())

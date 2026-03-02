@@ -1,12 +1,12 @@
 import logging
 
+from agaunibot.botapp import app
 from agaunibot.request import Request
-from agaunibot.message import Message
 
 class BotController:
 
     def __init__(self):
-        self.message = Message() 
+        self.message = app.message 
 
     def registration(self, request:Request):
         logging.info(str(request.user.id)+": BotController:registration")  
