@@ -81,6 +81,21 @@ class main:
             "channels": {
                 "domchat": "-000000000000"
             }
+        },
+        # Подключения к БД
+        "db": {
+            "default": {
+                # MSSQL c использованием драйвера pyodbc
+                "driver": "pyodbc",
+                # Строка импорат драйвера
+                "import_driver": "models.pyodbc", # Если драйвер свой, то можно указать так - "app.models.telegram"
+                # Класс, драйвера
+                "driver_class": "MSSQLClient",
+                # Количество кнопок на строке
+                "init_params": {
+                    "connection_string": ""
+                } 
+            }
         }
     }
 
