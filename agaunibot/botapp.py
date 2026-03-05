@@ -14,7 +14,7 @@ from .sysbf import SysBf
 from .user import User
 from .request import Request
 from .node import Node
-
+from .db import DB
 
 class BotApp:
 
@@ -37,8 +37,9 @@ class BotApp:
         if type(self.default_lang) is str and self.default_lang in Lang.available_langs:
             Lang.install_lang(self.default_lang)
         self.bot = MyBot(self.config)
-        self.message = Message(config) # Тут подгружается конфиг, дальше будет работать как синглтон TODO - избавиться от синглтона пробросом апп вместо реквеста
+        self.message = Message(config)
         self.request = None
+        self.db = DB.use_config(config=self.config.get_config("db"))
 
         # TODO - Продумать уведомления
         # if self.message.status:

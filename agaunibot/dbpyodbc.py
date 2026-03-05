@@ -7,7 +7,7 @@ class MSSQLClient:
     Подключение через DSN или строку подключения.
     """
     def __init__(
-        self,
+        self, *,
         connection_string: Optional[str] = None,
         dsn: Optional[str] = None,
         username: Optional[str] = None,
