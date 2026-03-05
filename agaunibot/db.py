@@ -30,7 +30,7 @@ class DB:
             if db_model is not None:
                 logging.info("{0}: use DB {2} from {1}".format(self.config[dbalias]["import_driver"], 
                                                     self.config[dbalias]["driver_class"]))
-                db_model.connect()
+                # db_model.connect()
                 self.db_obj[dbalias] = db_model
                 return self.db_obj[dbalias]
             else:
