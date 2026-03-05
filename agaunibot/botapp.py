@@ -14,7 +14,7 @@ from .sysbf import SysBf
 from .user import User
 from .request import Request
 from .node import Node
-from .db import DB
+from .db import db
 
 class BotApp:
 
@@ -39,7 +39,7 @@ class BotApp:
         self.bot = MyBot(self.config)
         self.message = Message(config)
         self.request = None
-        self.db = DB.use_config(config=self.config.get_config("db"))
+        self.db = db.use_config(config=self.config.get_config("db"))
 
         # TODO - Продумать уведомления
         # if self.message.status:
@@ -369,7 +369,6 @@ Examples:
         else:
             logging.basicConfig(level=log_level_val)
             print(f"log_level: {log_level} to console")            
-    
 
-                
+
 app:Final[BotApp] = BotApp()

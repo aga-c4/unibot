@@ -9,6 +9,7 @@
 
 import logging
 from .sysbf import SysBf
+from typing import Final
 
 class DB:
 
@@ -36,3 +37,5 @@ class DB:
                 return None
         else:
             return None
+
+db:Final[DB] = DB()
