@@ -14,7 +14,7 @@ from .sysbf import SysBf
 from .user import User
 from .request import Request
 from .node import Node
-
+from .db import db_manager
 
 class BotApp:
 
@@ -37,8 +37,10 @@ class BotApp:
         if type(self.default_lang) is str and self.default_lang in Lang.available_langs:
             Lang.install_lang(self.default_lang)
         self.bot = MyBot(self.config)
-        self.message = Message(config) # Тут подгружается конфиг, дальше будет работать как синглтон TODO - избавиться от синглтона пробросом апп вместо реквеста
+        self.message = Message(config)
         self.request = None
+        db_manager.use_config(config=config.get("db", {}))
+        self.db = db_manager
 
         # TODO - Продумать уведомления
         # if self.message.status:
@@ -52,6 +54,8 @@ class BotApp:
         if action == 'start':
             if self.message.status:
                 self.message.bind_message_funct(self)
+        elif action == 'debug':
+            pass        
         else:
             BotApp.help()
 
@@ -368,7 +372,6 @@ Examples:
         else:
             logging.basicConfig(level=log_level_val)
             print(f"log_level: {log_level} to console")            
-    
 
-                
+
 app:Final[BotApp] = BotApp()
