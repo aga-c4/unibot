@@ -93,12 +93,7 @@ class main:
                 "driver_class": "MSSQLClient",
                 # Количество кнопок на строке
                 "init_params": {
-                    "connection_string": (
-                        "Driver={ODBC Driver 17 for SQL Server};"
-                        "Server=localhost,1433;"
-                        "Database=TestDB;"
-                        "UID=sa;PWD=your_password"
-                    )
+                    "connection_string": ""
                 } 
             }
         }
