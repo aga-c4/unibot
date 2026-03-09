@@ -84,16 +84,21 @@ class main:
         },
         # Подключения к БД
         "db": {
-            "default": {
+            "mssql1": {
                 # MSSQL c использованием драйвера pyodbc
                 "driver": "pyodbc",
                 # Строка импорат драйвера
-                "import_driver": "models.pyodbc", # Если драйвер свой, то можно указать так - "app.models.telegram"
+                "import_driver": ".pyodbc", # Если драйвер свой, то можно указать так - "app.models.telegram"
                 # Класс, драйвера
                 "driver_class": "MSSQLClient",
                 # Количество кнопок на строке
                 "init_params": {
-                    "connection_string": ""
+                    "connection_string": (
+                        "Driver={ODBC Driver 17 for SQL Server};"
+                        "Server=localhost,1433;"
+                        "Database=TestDB;"
+                        "UID=sa;PWD=your_password"
+                    )
                 } 
             }
         }

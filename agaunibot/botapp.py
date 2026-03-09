@@ -14,7 +14,11 @@ from .sysbf import SysBf
 from .user import User
 from .request import Request
 from .node import Node
+<<<<<<< HEAD
 from .db import db_manager
+=======
+from .db import db
+>>>>>>> 59a609ad112685e061cc79571f37a88ba7ce3899
 
 class BotApp:
 
@@ -39,8 +43,12 @@ class BotApp:
         self.bot = MyBot(self.config)
         self.message = Message(config)
         self.request = None
+<<<<<<< HEAD
         db_manager.use_config(config=config.get("db", {}))
         self.db = db_manager
+=======
+        self.db = db.use_config(config=self.config.get_config("db"))
+>>>>>>> 59a609ad112685e061cc79571f37a88ba7ce3899
 
         # TODO - Продумать уведомления
         # if self.message.status:
