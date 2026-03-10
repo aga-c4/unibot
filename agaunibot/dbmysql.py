@@ -34,32 +34,39 @@ print("Deleted rows:", deleted_rows)
 import logging
 import mysql.connector
 
-class Dbmysql():
+class Dbmysql:
     config_db = {}
     connection = None
     cursor = None
     autocommit = True
 
     
-    def __init__(self, **config_db):
+    def __init__(self, **config_db): 
         self.config_db = dict(config_db)
         self.autocommit = config_db.get("autocommit", True)
         self.connect()
 
-
     def connect(self):
         try:
-            if 'host' in self.config_db:
-                if self.connection is None:
+            if 'host' in self.config_db: 
+                if self.connection is None and type(self.config_db) is dict:
+                    host=self.config_db.get('host', "")
+                    port=self.config_db.get('port', 3306)
+                    username=self.config_db.get('user', "")
+                    password=self.config_db.get('password', "")
+                    database=self.config_db.get('database', "")   
+                    print("self.config_db:", self.config_db)    
                     self.connection = mysql.connector.connect(
-                        host=self.config_db.get('host', ""),
-                        port=self.config_db.get('port', 3306),
-                        user=self.config_db.get('user', ""),
-                        password=self.config_db.get('passwd', ""),
-                        database=self.config_db.get('database', "")
+                        host=host,
+                        port=port,
+                        username=username,
+                        password=password,
+                        database=database
                     )
+                print("!!!")    
+                if self.connection is not None:    
                     self.cursor = self.connection.cursor()
-                return True    
+                    return True    
             return False
         except Exception as e:
             logging.error(f"MySQL(Dbmysql) connect error: {e}")
@@ -196,7 +203,7 @@ class Dbmysql():
 
     def begin(self) -> None:
         """Начать транзакцию (если autocommit=False)."""
-        # TODO - Вероятно не будет нормально работать при разделении объекта self._conn между процессами
+        # TODO - Вероятно не будет нормально работать при разделении объекта self.connection между процессами
         if self.connection and self.autocommit:
             self.autocommit = False
         try:
@@ -210,10 +217,10 @@ class Dbmysql():
 
     def commit(self) -> None:
         """Зафиксировать транзакцию."""
-        # TODO - Вероятно не будет нормально работать при разделении объекта self._conn между процессами
+        # TODO - Вероятно не будет нормально работать при разделении объекта self.connection между процессами
         self._ensure_connected()
         try:
-            if hasattr(self._conn, "commit"):
+            if hasattr(self.connection, "commit"):
                 self.connection.commit()
                 return True
             else:
@@ -225,10 +232,10 @@ class Dbmysql():
 
     def rollback(self) -> None:
         """Откатить транзакцию."""
-        # TODO - Вероятно не будет нормально работать при разделении объекта self._conn между процессами
+        # TODO - Вероятно не будет нормально работать при разделении объекта self.connection между процессами
         self._ensure_connected()
         try:
-            if hasattr(self._conn, "rollback"):
+            if hasattr(self.connection, "rollback"):
                 self.connection.rollback()
                 return True
             else:
@@ -262,9 +269,9 @@ class Dbmysql():
             Возвращает - TRUE, если соединение в рабочем состоянии и FALSE в противном случае."""
         
         try:
-            if self._conn is not None: 
+            if self.connection is not None: 
                 logging.info("MSSQL(Dbmssqlodbc) try to reconnect:")
-                self._conn.ping(reconnect=True, attempts=3, delay=0)
+                self.connection.ping(reconnect=True, attempts=3, delay=0)
                 # При недоступности соединения будет поднята ошибка InterfaceError
                 return True
             else: 

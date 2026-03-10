@@ -25,66 +25,72 @@ class MSSQLClient:
     """
 
     use_mars = False
+    config_db = {}
 
     def __init__(
         self,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        user: Optional[str] = None,
-        password: Optional[str] = None,
-        database: Optional[str] = None,
-        options: Optional[Dict[str, Any]] = None,
-        use_mars: bool = False, # Multiple Active Result Sets (MARS) - при подключении устанавливает MultipleActiveResultSets=Yes
-        autocommit: bool = True,
-        connection_string: Optional[str] = None, # Если задана, то используется вместо настроек подключения к базе (максимальный приоритет)
-        *args, **kwargs
+        *args, **config_db
     ):
         """
         Инициализация клиента.
         Можно явно передать параметры подключения или использовать connection_string.
         """
 
-        self.autocommit = autocommit
         self._conn = None
         self._cursor = None
+        self.config_db = config_db
+        # Multiple Active Result Sets (MARS) - при подключении устанавливает MultipleActiveResultSets=Yes
+        self.use_mars = config_db.get("use_mars", False)
+        self.autocommit = config_db.get("autocommit", True)
+
 
         if connect is None:
             raise RuntimeError("mssql-python не установлен или не распознан импорт. Установите пакет mssql-python.")
+
+        self.connect()    
+
+    def connect(self) -> None:
+        """Установить соединение с базой."""
+
+        host = self.config_db.get("host", None)
+        port = ',' + self.config_db.get("port", None)
+        user = self.config_db.get("user", None)
+        password = self.config_db.get("password", None)
+        database = self.config_db.get("database", None)
+        options = self.config_db.get("options", None)
+        connection_string = self.config_db.get("connection_string", None) # Если задана, то используется вместо настроек подключения к базе (максимальный приоритет)
+        driver =  self.config_db.get("driver", "ODBC Driver 17 for SQL Server")   
 
         if connection_string:
             self.connection_string = connection_string
         else:
             parts = []
             if host:
-                parts.append(f"host={host}")
-            if port:
-                parts.append(f"port={port}")
+                parts.append(f"SERVER={host}{port}")
             if database:
-                parts.append(f"database={database}")
+                parts.append(f"DATABASE={database}")
             if user:
-                parts.append(f"user={user}")
+                parts.append(f"UID={user}")
             if password:
-                parts.append(f"password={password}")
-            if use_mars:
-                    self.use_mars = True
-                    parts.append(f"MultipleActiveResultSets=Yes")       
+                parts.append(f"PWD={password}")
+            if self.use_mars:
+                    parts.append(f"MultipleActiveResultSets=yes")         
+            parts.append("TrustServerCertificate=yes")  
+            parts.append("Encrypt=yes")         
             if options:
                 for k, v in options.items():
                     parts.append(f"{k}={v}")
             self.connection_string = ";".join(parts)
-        self.connect()    
 
-    def connect(self) -> None:
-        """Установить соединение с базой."""
         try:
             if self._conn is not None:
                 return self.ping()
             self._conn = connect(self.connection_string)
             # предположим, что MSSQL возвращает объект соединения, можно получить курсор
-            self._cursor = self._conn.cursor()
             # Установка автокоммита, если поддерживается
-            if hasattr(self._conn, "set_autocommit"):
+            if self.autocommit and hasattr(self._conn, "set_autocommit"):
                 self._conn.set_autocommit(self.autocommit)
+            self._cursor = self._conn.cursor()    
             return True
         except Exception as e:
             logging.error(f"MSSQL(MSSQLClient) connect error: {e}")

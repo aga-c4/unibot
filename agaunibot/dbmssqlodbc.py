@@ -15,6 +15,9 @@ class Dbmssqlodbc:
     Простое обертка над pyodbc для работы с MSSQL.
     Подключение через DSN или строку подключения.
     """
+
+    use_mars = False
+
     def __init__(
         self,
         host: Optional[str] = None,
@@ -60,8 +63,7 @@ class Dbmssqlodbc:
                 if password:
                     parts.append(f"PWD={password}")
                 if use_mars:
-                    self.use_mars = True
-                    parts.append(f"MultipleActiveResultSets=Yes")       
+                    self.use_mars = True      
             if options:
                 for k, v in options.items():
                     parts.append(f"{k}={v}")
@@ -74,7 +76,7 @@ class Dbmssqlodbc:
             if self._conn is not None:
                 return self.ping()
             self._conn = pyodbc.connect(self.connection_string, autocommit=self.autocommit)
-            if self.use_mars:
+            if self.use_mars and self._conn is not None:
                 # Enabling Multiple Active Result Sets (MARS)
                 self._conn.set_attr(pyodbc.SQL_ATTR_MARS_ENABLED, True)     
             self._cursor = self._conn.cursor()
@@ -276,8 +278,9 @@ class Dbmssqlodbc:
         try:
             if self._conn is not None: 
                 logging.info("MSSQL(Dbmssqlodbc) try to reconnect:")
-                self._conn.ping(reconnect=True, attempts=3, delay=0)
+                # self._conn.ping(reconnect=True, attempts=3, delay=0)
                 # При недоступности соединения будет поднята ошибка InterfaceError
+                self.close()
                 return True
             else: 
                 return False
